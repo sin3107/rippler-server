@@ -28,6 +28,11 @@ router.post('/', async (req, res) => {
         key 값에 가능한 where, 이런거 안넣으시면 됩니다.
 
         그리고 update: true 쓸거면 where 랑 값 안겹치게 키 값 설정하세요
+
+        params[idx].type 은
+        str, num, float, arr, bool 이 있습니다.
+
+        아직 2d arr은 안되니 2d arr은 한번더 valid 하길 바래요
      */
     const params = [
         {key:'p1', value: 'p1', type: 'str', max: 10, required: true},
