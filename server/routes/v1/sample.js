@@ -5,7 +5,6 @@ router.post('/', async (req, res) => {
     const body = req.body
 
     let sql
-    let sql_params
     let valid = {}
 
     /*
@@ -69,6 +68,23 @@ router.post('/', async (req, res) => {
         console.log(valid)
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+        sql = `
+            SELECT
+                COUNT(*)
+            FROM
+                blah
+            WHERE
+                1=1
+            ${valid.where}
+        `
+        
+        // _db.qry(sql, valid.params)
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
         return
     }
 
