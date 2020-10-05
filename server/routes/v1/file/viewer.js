@@ -20,16 +20,16 @@ router.get('/image/:id', async(req, res) => {
     try {
         result = await _db.qry(sql, sql_params)
     } catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e, null)
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
         return
     }
 
     if (result.length < 1) {
-        _out.err(res, _CONSTANT.EMPTY_DATA, 'not found items', null)
+        _out.print(res, _CONSTANT.EMPTY_DATA, null)
         return
     }
 
-    let s = fs.createReadStream( util.format('%s%s', __upload_dir, result[0]['path']) )
+    let s = fs.createReadStream( `${__upload_dir}${result[0]['path']}` )
     s.on('open', () => {
         res.set('Content-Type', 'image/png');
         res.set('Content-Length', result[0]['size']);
@@ -37,7 +37,7 @@ router.get('/image/:id', async(req, res) => {
     })
 
     s.on('error', e=> {
-        _out.err(res, _CONSTANT.EMPTY_DATA, e, null)
+        _out.print(res, _CONSTANT.EMPTY_DATA, null)
     })
 })
 

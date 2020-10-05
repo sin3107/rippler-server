@@ -8,7 +8,7 @@ const formidable = require('formidable')
 
 async function createDir() {
     const dateDir = moment().format('/YYYY/MM/DD')
-    const path = util.format('%s%s', __upload_dir, dateDir)
+    const path = `${__upload_dir}${dateDir}`
     if (fs.existsSync(path)) {
         return path
     }
@@ -27,7 +27,7 @@ function uploadFile(req, path) {
         form.parse(req)
 
         form.on('fileBegin', function (name, file){
-            file.path = util.format('%s/%s', path, uuidv4())
+            file.path = `${path}${uuidv4()}`
         })
 
         form.on('field', function(k, v) {
@@ -62,7 +62,7 @@ router.post('/upload/image', async(req, res) => {
         const fids = []
 
         if (uploadInfo['files'].length < 1) {
-            res.json(_CONSTANT.EMPTY_DATA())
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
 
@@ -97,7 +97,7 @@ router.post('/upload/image', async(req, res) => {
         out['item'] = fids
         out['item_length'] = fids.length
         out['total'] = fids.length
-        _out.print(res, out)
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.UPLOAD_FAILED, e, null)

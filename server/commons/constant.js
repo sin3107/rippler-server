@@ -3,18 +3,13 @@ module.exports = {
         code: 1000
         ,message: "success"
     }
-
     ,EMPTY_DATA: {
-        code: 1100
+        code: 1001
         ,message: "data not found"
     }
     ,ALREADY_SIGNUPED: {
-        code: 1101
+        code: 1002
         ,message: "already signuped"
-    }
-    ,UPLOAD_FAILED: {
-        code: 1102
-        ,message: "upload failed"
     }
 
     ,EMPTY_PARAMETER: {
@@ -32,10 +27,6 @@ module.exports = {
     ,NOT_AUTHORIZED: {
         code: 2003
         ,message: "not authorized"
-    }
-    ,BANNED_USER: {
-        code: 2004
-        ,message: "banned user"
     }
     ,NOT_ALLOWED_PROVIDER: {
         code: 2005
