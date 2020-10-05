@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs')
 
 function logger(path, level) {
     if (!(this instanceof logger)) {

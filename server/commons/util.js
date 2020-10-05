@@ -16,13 +16,13 @@ function findKey(o, k) {
 
 utils.prototype.randomString = function(size=6) {
     //return crypto.randomBytes(size).toString('base64').slice(0, size)
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
+    var result           = ''
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    var charactersLength = characters.length
     for ( var i = 0; i < size; i++ ) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        result += characters.charAt(Math.floor(Math.random() * charactersLength))
     }
-    return result;
+    return result
 }
 
 utils.prototype.hasK = function(o, ...k) {

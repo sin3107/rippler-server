@@ -19,7 +19,7 @@ mailer.prototype.send = async function(to, title, content) {
             user: process.env.SMTP_MAIL_USER,
             pass: process.env.SMTP_MAIL_PASSWORD
         }
-    });
+    })
 
     let res
 

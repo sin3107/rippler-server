@@ -67,9 +67,8 @@ async function main() {
             _out.err(res, _CONSTANT.JSON_PARSE_ERROR, 'syntax error', null)
             return
         }
-
-        res.status(err.status || 500);
-        _out.err(res, _CONSTANT[`ERROR_${err.status || 500}`], 'server error', err.status || 500)
+        console.log(error)
+        _out.err(res, _CONSTANT.ERROR_500, 'server error', 500)
     });
 
     app.listen(port, () => {

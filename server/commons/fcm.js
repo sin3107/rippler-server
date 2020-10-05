@@ -14,13 +14,13 @@ function fcm() {
 fcm.prototype.init = function() {
     try {
         global._fcm = require("firebase-admin")
-        const serviceAccount = require(process.env.FCM_ADMIN_SDK_PATH);
+        const serviceAccount = require(process.env.FCM_ADMIN_SDK_PATH)
         _log.i('# load fcm admin success')
 
         _fcm.initializeApp({
             credential: _fcm.credential.cert(serviceAccount),
             databaseURL: process.env.FCM_FIREBASE_URL
-        });
+        })
         _log.i('# initialize firebase admin')
 
     } catch (e) {
