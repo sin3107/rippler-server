@@ -33,6 +33,20 @@ DB.prototype.qry = function (qry, params) {
                 return
             }
 
+            if (params && params.hasOwnProperty && params.hasOwnProperty('page')) {
+                if (!params.hasOwnProperty('limit')) {
+                    params['limit'] = 10
+                }
+
+                if (params.page < 1) {
+                    params.page = 0
+                } else {
+                    params.page -= 1
+                }
+
+                params.page *= params.limit
+            }
+
             conn.query(qry, params, (e, r, f) => {
                 if (e) {
                     conn.release()
