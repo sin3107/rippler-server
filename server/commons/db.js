@@ -61,4 +61,30 @@ DB.prototype.qry = function (qry, params) {
     })
 }
 
+DB.prototype.getConn = function() {
+    return new Promise((resolve, reject) => {
+        this.pool.getConnection((err, conn) => {
+            if (err) {
+                reject(err)
+                return
+            }
+
+            resolve(conn)
+        })
+    })
+}
+
+DB.prototype.execQry = function(c, q, p) {
+    return new Promise((resolve, reject) => {
+        c.query(q, p, (e,r,f) => {
+            if (e) {
+                reject(e)
+                return
+            }
+
+            resolve(r)
+        })
+    })
+}
+
 module.exports = DB
