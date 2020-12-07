@@ -19,26 +19,26 @@ global.util = require('util')
 global.__base = __dirname
 global.__upload_dir = process.env.UPLOAD_DIR
 
-const router = require( `${__base}/routes` )
-const db = require( `${__base}/commons/db` )
+const router = require(`${__base}/routes`)
+const db = require(`${__base}/commons/db`)
 
 // level: 1 - no output, 2 - default, 3 - info, 4 - warn, 5 - error
 const logLevel = process.env.LOG_LEVEL || 5
 
 async function main() {
-    global._log = require( `${__base}/commons/logger` )(null, logLevel)
+    global._log = require(`${__base}/commons/logger`)(null, logLevel)
     _log.i('# init logger')
 
-    global._util = require( `${__base}/commons/util` )()
+    global._util = require(`${__base}/commons/util`)()
     _log.i('# init utils')
 
-    global._CONSTANT = require( `${__base}/commons/constant` )
+    global._CONSTANT = require(`${__base}/commons/constant`)
     _log.i('# init CONSTANT Variables')
     //global._out = require( `${__base}/commons/out` )()
-    global._out = require( `${__base}/commons/out` )()
+    global._out = require(`${__base}/commons/out`)()
     _log.i('# init printer')
 
-    require( `${__base}/commons/fcm` )()
+    require(`${__base}/commons/fcm`)()
 
     global._db = db(mysql.createPool(
         {
@@ -54,7 +54,7 @@ async function main() {
     ))
     _log.i('# load db success')
 
-    global._jwt = require( `${__base}/commons/jwt` )(process.env.JWT_SECRET)
+    global._jwt = require(`${__base}/commons/jwt`)(process.env.JWT_SECRET)
     _log.i('# load jwt success')
 
     // router set

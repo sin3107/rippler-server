@@ -1,12 +1,216 @@
 const express = require('express')
 const router = express.Router()
 
+
 router.post('/signin', async (req, res) => {
-    // TODO
+
+    let sql
+    let valid = {}
+    let result
+    let body = req.body
+
+    let user_id = 0
+
+    const params = [
+        {key: 'num', value: 'num', type: 'str', required: true, where: true, eq: true},
+        {key: 'password', value: 'password', type: 'str', required: true, where: true, eq: true},
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+        sql = `
+            SELECT
+                id, num
+            FROM
+                users
+            WHERE
+                1=1
+            ${valid.where} 
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if (result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        user_id = result[0]['id']
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+        return
+    }
+
+    try {
+        const token = await _jwt.sign({u: user_id, l: result[0]['num']})
+        _out.print(res, null, [token])
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
 })
 
 router.post('/signup', async (req, res) => {
-    // TODO
+
+    let sql
+    let valid = {}
+    let result
+    let body = req.body
+
+    let id = 0
+
+    const params = [
+        {key: 'num', type: 'str', required: true},
+        {key: 'password', type: 'str', required: true},
+        {key: 'device_id', value: 'device_id', type: 'str', optional: true, update: true}, // 휴대폰 고유식별 id (Android: SSAID, Ios: UDID)
+        {key: 'device_token', value: 'device_token', type: 'str', optional: true, update: true}, // 휴대폰 푸시 토큰
+        {key: 'device_platform', value: 'device_platform', type: 'str', optional: true, update: true}, // 휴대폰 os(android / ios)
+        {key: 'device_brand', value: 'device_brand', type: 'str', optional: true, update: true}, // 휴대폰 브랜드
+        {key: 'device_model', value: 'device_model', type: 'str', optional: true, update: true}, // 휴대폰 모델명
+        {key: 'device_version', value: 'device_version', type: 'str', optional: true, update: true}, // 휴대폰 Version
+    ]
+
+
+    try {
+        _util.valid(body, params, valid)
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    const conn = await _db.getConn()
+
+    try {
+        await conn.beginTransaction()
+
+        sql = `
+            INSERT INTO 
+                users(
+                    num, password
+                )
+            VALUES
+                (
+                    :num, :password
+                )
+        `
+
+        result = await _db.execQry(conn, sql, valid.params)
+        id = result.insertId
+        valid.params['id'] = id
+
+        if (valid.update !== "") {
+            sql = `
+                UPDATE
+                    users
+                SET
+                    ${valid.update}
+                WHERE
+                    id = :id
+                `
+            await _db.execQry(conn, sql, valid.params)
+        }
+        await conn.commit()
+        conn.release()
+
+    } catch (e) {
+        await conn.rollback()
+        conn.release()
+
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+        return
+    }
+
+
+    const conn2 = await _db.getConn()
+    try {
+        await conn2.beginTransaction()
+
+        if (body['content_list']) {
+            if (body['content_list'].length < 1) {
+                return
+            } else {
+                for (let i = 0, e = body['content_list'].length; i < e; i++) {
+                    sql = `
+                        INSERT INTO
+                            num_books(
+                                user_id, name, num
+                            )
+                        VALUES
+                            (
+                                :id, :name, :num
+                            );
+                    `
+                    valid.params['name'] = body['content_list'][i]['name']
+                    valid.params['num'] = body['content_list'][i]['num']
+                    result = await _db.execQry(conn2, sql, valid.params)
+                }
+                await conn2.commit()
+                conn2.release()
+            }
+        }
+
+    } catch (e) {
+        await conn2.rollback()
+        conn2.release()
+        _out.err(res, _CONSTANT.ERROR_500, null)
+        return
+    }
+
+    _out.print(res, null, id)
 })
+
+router.post('/exists', async (req, res) => {
+
+    const body = req.body
+    let valid = {}
+
+    const params = [
+        {key: 'num', type: 'str', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+        const check = await existsOAuth(body.num)
+        const out = {'item': [check]}
+        _out.print(res, null, out)
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+})
+
+
+async function existsOAuth(num) {
+
+    let sql = `
+        SELECT 
+            COUNT(*) as cnt 
+        FROM 
+            users
+        WHERE 
+            num=:num 
+    `
+    let sql_params = {num: num}
+    let result
+
+    try {
+        result = await _db.qry(sql, sql_params)
+    } catch (e) {
+        throw e
+    }
+
+    return result[0]['cnt'] > 0
+}
 
 module.exports = router

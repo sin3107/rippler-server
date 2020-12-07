@@ -2,20 +2,19 @@
 
 사용자 Authorization
 
-## OAuth Exists
+## Exists
 
-OAuth 있는지 확인  
+휴대전화번호 가입 여부 확인
 
-POST /api/auth/exists/oauth HTTP  
-HOST: hearo.chaeft.com  
+POST /api/v1/auth/exists HTTP  
+HOST: rippler.chaeft.com
 Content-Type: application/json;charset=utf-8  
 
 ### request
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|provider|String| 제공업체, 제공자 |o|
-|authId|String| 제공업체, 제공자가 제공하는 id |o|
+|num|String| phone number |o|
 
 ### response
 
@@ -34,11 +33,10 @@ Content-Type: application/json;charset=utf-8
 request  
 ```bash
 # 전체 가맹점
-curl -X POST --url 'https://hearo.chaeft.com/api/auth/exists/oauth' \
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/auth/exists' \
 -H 'Content-Type: application/json;charset=utf-8' \
 -d '{
-    "provider":"kakao",
-    "authId":"12341234"
+    "num":"01012345678"
 }'
 ```
 
@@ -49,26 +47,37 @@ response
     "message": "success",
     "code": 1000,
     "data": {
-        "item": [],
-        "item_length": 0,
-        "total": 0,
+        "item": [true]//중복가입된 번호 or [false]//사용가능한 번호,
+        "item_length": 1,
+        "total": 1,
     }
 }
 ```
 
-## email Exists
 
-이메일 있는지 확인  
+## SignUp
 
-POST /api/auth/exists/email HTTP  
-HOST: hearo.chaeft.com  
+회원가입
+
+POST /api/v1/auth/signup HTTP  
+HOST: rippler.chaeft.com
 Content-Type: application/json;charset=utf-8  
 
 ### request
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|email|String| 이메일 |o|
+|num|String| 휴대전화번호 |o|
+|password|String| 비밀번호 |o|
+|device_id|String| 휴대폰 고유식별 id (Android: SSAID, Ios: UDID) |x|
+|device_token|String| 휴대폰 푸시 토큰 |x|
+|device_platform|String| 휴대폰 os(android / ios) |x|
+|device_brand|String| 휴대폰 브랜드 |x|
+|device_model|String| 휴대폰 모델명 |x|
+|device_version|String| 휴대폰 Version |x|
+|content_list|Array| 전화번호 목록 |x|
+
+
 
 ### response
 
@@ -86,11 +95,17 @@ Content-Type: application/json;charset=utf-8
 
 request  
 ```bash
-# 전체 가맹점
-curl -X POST --url 'https://hearo.chaeft.com/api/auth/exists/email' \
+# 회원가입
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/auth/signup' \
 -H 'Content-Type: application/json;charset=utf-8' \
 -d '{
-    "email":"email@gmail.com"
+    "num": "01012345678",
+    "password": "123123123",
+    "device_id": "EW34WWE",
+    "content_list": [
+        {"name": "김철수", "num": "01012345678"},
+        {"name": "박검수", "num": "01079797897"}
+    ]
 }'
 ```
 
@@ -101,27 +116,31 @@ response
     "message": "success",
     "code": 1000,
     "data": {
-        "item": [],
-        "item_length": 0,
-        "total": 0,
+        "item": [1], //회원넘버
+        "item_length": 1,
+        "total": 1,
     }
 }
 ```
 
-## nickname Exists
 
-닉네임 있는지 확인  
 
-POST /api/auth/exists/nickname HTTP  
-HOST: hearo.chaeft.com  
+## SignIn
+
+로그인
+
+POST /api/v1/auth/signin HTTP  
+HOST: rippler.chaeft.com
 Content-Type: application/json;charset=utf-8  
 
 ### request
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|provider|String| 제공업체, 제공자 |o|
-|authId|String| 제공업체, 제공자가 제공하는 id |o|
+|num|String| 휴대전화번호 |o|
+|password|String| 비밀번호 |o|
+
+
 
 ### response
 
@@ -139,11 +158,12 @@ Content-Type: application/json;charset=utf-8
 
 request  
 ```bash
-# 전체 가맹점
-curl -X POST --url 'https://hearo.chaeft.com/api/auth/exists/nickname' \
+# 로그인
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/auth/signin' \
 -H 'Content-Type: application/json;charset=utf-8' \
 -d '{
-    "nickname":"닉네임"
+    "num": "01012345678",
+    "password": "123123123"
 }'
 ```
 
@@ -154,9 +174,13 @@ response
     "message": "success",
     "code": 1000,
     "data": {
-        "item": [],
-        "item_length": 0,
-        "total": 0,
+        "item": [
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1Ijo1LCJsIjoiNTU1Iiwia
+            WF0IjoxNjA3MzI0Njk0LCJleHAiOjE2MDc0MTEwOTQsImlzcyI6ImlzcyIsInN1Y
+            iI6InN1YiJ9.lI9_irZJXB5XfoNLXEiT-eCcoMTEpLhIUC_ZpVq7_t8"
+        ],
+        "item_length": 1,
+        "total": 1,
     }
 }
 ```
