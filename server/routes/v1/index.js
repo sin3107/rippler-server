@@ -7,8 +7,9 @@ const uploader = require( `${__base}/routes/v1/file/uploader` )
 const viewer = require( `${__base}/routes/v1/file/viewer` )
 
 const auth = require( `${__base}/routes/v1/auth` )
-
 const authCheck = require( `${__base}/routes/v1/auth_check` )
+
+const user = require( `${__base}/routes/v1/user` )
 
 
 
@@ -24,10 +25,14 @@ router.use('/sample', sample)
 router.use('/file', viewer)
 router.use('/auth', auth)
 
-/*// auth check
-router.use(authCheck)*/
+// auth check
+router.use(authCheck)
 
 // upload router
 router.use('/file', uploader)
+
+router.use('/user', user)
+
+
 
 module.exports = router
