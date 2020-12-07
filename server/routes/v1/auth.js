@@ -56,6 +56,7 @@ router.post('/signin', async (req, res) => {
 
 })
 
+
 router.post('/signup', async (req, res) => {
 
     let sql
@@ -164,6 +165,7 @@ router.post('/signup', async (req, res) => {
 
     _out.print(res, null, id)
 })
+
 
 router.post('/exists', async (req, res) => {
 
