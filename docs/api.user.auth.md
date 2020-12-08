@@ -75,7 +75,6 @@ Content-Type: application/json;charset=utf-8
 |device_brand|String| 휴대폰 브랜드 |x|
 |device_model|String| 휴대폰 모델명 |x|
 |device_version|String| 휴대폰 Version |x|
-|content_list|Array| 전화번호 목록 |x|
 
 
 
@@ -101,11 +100,7 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/auth/signup' \
 -d '{
     "num": "01012345678",
     "password": "123123123",
-    "device_id": "EW34WWE",
-    "content_list": [
-        {"name": "김철수", "num": "01012345678"},
-        {"name": "박검수", "num": "01079797897"}
-    ]
+    "device_id": "EW34WWE"
 }'
 ```
 

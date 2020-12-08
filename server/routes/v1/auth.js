@@ -127,43 +127,6 @@ router.post('/signup', async (req, res) => {
         return
     }
 
-
-    const conn2 = await _db.getConn()
-    try {
-        await conn2.beginTransaction()
-
-        if (body['content_list']) {
-            if (body['content_list'].length < 1) {
-                return
-            } else {
-                for (let i = 0, e = body['content_list'].length; i < e; i++) {
-                    sql = `
-                        INSERT INTO
-                            num_books(
-                                user_id, name, num
-                            )
-                        VALUES
-                            (
-                                :id, :name, :num
-                            );
-                    `
-                    valid.params['name'] = body['content_list'][i]['name']
-                    valid.params['num'] = body['content_list'][i]['num']
-                    result = await _db.execQry(conn2, sql, valid.params)
-                }
-                await conn2.commit()
-                conn2.release()
-            }
-        }
-
-    } catch (e) {
-        await conn2.rollback()
-        conn2.release()
-        _out.err(res, _CONSTANT.ERROR_500, null)
-        return
-    }
-
-    _out.print(res, null, id)
 })
 
 

@@ -5,10 +5,17 @@ const router = express.Router()
 router.get('/info', async (req, res) => {
 
     let sql
-    let valid = {uid: req.uinfo['u']}
+    let valid = {}
     let result
 
-    try{
+    try {
+        valid['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
         sql = `
             SELECT
                 id, 
@@ -25,18 +32,17 @@ router.get('/info', async (req, res) => {
 
         result = await _db.qry(sql, valid)
 
-        if(result.length < 1){
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_PARAMETER, null)
             return
         }
+
         _out.print(res, null, result)
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
-
 })
-
 
 
 

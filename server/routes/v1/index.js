@@ -10,7 +10,8 @@ const auth = require( `${__base}/routes/v1/auth` )
 const authCheck = require( `${__base}/routes/v1/auth_check` )
 
 const user = require( `${__base}/routes/v1/user` )
-
+const friend = require( `${__base}/routes/v1/friend` )
+const pool = require( `${__base}/routes/v1/pool` )
 
 
 router.get('/', async(req, res) => {
@@ -32,7 +33,8 @@ router.use(authCheck)
 router.use('/file', uploader)
 
 router.use('/user', user)
-
+router.use('/friend', friend)
+router.use('/pool', pool)
 
 
 module.exports = router
