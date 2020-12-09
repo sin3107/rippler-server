@@ -88,6 +88,25 @@ router.get('/list', async (req, res) => {
         "favorite_pool_list": favorite_pool_list
     }
 
+    try {
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                blacklist
+            WHERE
+                user_id = :uid
+        `
+
+        result['blind_cnt'] = await _db.qry(sql, valid)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+        return
+    }
+
+
     _out.print(res, null, result)
 
 })
@@ -223,7 +242,7 @@ router.post('/update', async (req, res) => {
             result = await _db.qry(sql, valid.params)
 
             if (result.changedRows < 1) {
-                _out.print(res, _CONSTANT.ERROR_500, null)
+                _out.print(res, _CONSTANT.INVALID_PARAMETER, null)
                 return
             }
             _out.print(res, null, [result.changedRows])
