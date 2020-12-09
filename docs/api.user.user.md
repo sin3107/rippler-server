@@ -32,7 +32,7 @@ token : token
 request  
 ```bash
 # 회원 정보 호출
-curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/info' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/user/info' \
 -H 'token: token' \
 ```
 

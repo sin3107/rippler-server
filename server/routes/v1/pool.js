@@ -112,6 +112,65 @@ router.get('/list', async (req, res) => {
 })
 
 
+router.get('/single_list', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'gid', type: 'num', required: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            SELECT
+                u.id,
+                u.name as friend_name,
+                u.thumbnail,
+                u.status_msg
+            FROM
+                pool_relations pr
+            INNER JOIN
+                users u
+            ON
+                pr.friend_id = u.id
+            INNER JOIN
+                whitelist wl
+            ON
+                wl.friend_id = pr.friend_id
+            WHERE
+                group_id = :gid
+            AND
+                wl.user_id = :uid
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
 router.post('/create', async (req, res) => {
 
     let sql
@@ -159,6 +218,12 @@ router.post('/create', async (req, res) => {
         pool_id = result.insertId
 
     } catch (e) {
+
+        if (e.code === 'ER_DUP_ENTRY') {
+            _out.print(res, _CONSTANT.EXISTS_NAME, null)
+            return
+        }
+
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
         return
     }
@@ -227,7 +292,7 @@ router.post('/update', async (req, res) => {
     }
 
 
-    if (valid.params['insert_list'].length < 1 && valid.params['delete_list'].length < 1) {
+    if(valid.params['insert_list'] === undefined && valid.params['delete_list'] === undefined){
         try {
 
             sql = `
@@ -246,6 +311,7 @@ router.post('/update', async (req, res) => {
                 return
             }
             _out.print(res, null, [result.changedRows])
+            return
 
         } catch (e) {
             _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -253,74 +319,78 @@ router.post('/update', async (req, res) => {
         }
     }
 
-    if (valid.params['insert_list'].length > 0) {
-        const conn1 = await _db.getConn()
-        try {
-            await conn1.beginTransaction()
 
-            for (let i = 0, e = valid['params']['insert_list'].length; i < e; i++) {
+    if (valid.params['insert_list']) {
+        if (valid.params['insert_list'].length > 0) {
+            const conn1 = await _db.getConn()
+            try {
+                await conn1.beginTransaction()
 
-                valid['params']['fid'] = valid['params']['insert_list'][i]
+                for (let i = 0, e = valid['params']['insert_list'].length; i < e; i++) {
 
-                sql = `
-                    INSERT INTO
-                        pool_relations(
-                            group_id, friend_id
-                        )
-                    VALUES
-                        (
-                            :id, :fid
-                        )
-                `
+                    valid['params']['fid'] = valid['params']['insert_list'][i]
 
-                await _db.execQry(conn1, sql, valid.params)
-            }
-            await conn1.commit()
-            conn1.release()
+                    sql = `
+                        INSERT INTO
+                            pool_relations(
+                                group_id, friend_id
+                            )
+                        VALUES
+                            (
+                                :id, :fid
+                            )
+                    `
 
-        } catch (e) {
-            await conn1.rollback()
-            conn1.release()
+                    await _db.execQry(conn1, sql, valid.params)
+                }
+                await conn1.commit()
+                conn1.release()
 
-            _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-            return
-        }
+            } catch (e) {
+                await conn1.rollback()
+                conn1.release()
 
-    }
-
-    if (valid.params['delete_list'].length > 0) {
-        const conn2 = await _db.getConn()
-        try {
-            await conn2.beginTransaction()
-
-            for (let i = 0, e = valid['params']['delete_list'].length; i < e; i++) {
-
-                valid['params']['fid'] = valid['params']['delete_list'][i]
-
-                sql = `
-                    DELETE FROM 
-                        pool_relations
-                    WHERE
-                        group_id = :id
-                    AND
-                        friend_id = :fid
-                `
-
-                await _db.execQry(conn2, sql, valid.params)
+                _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+                return
             }
 
-            await conn2.commit()
-            conn2.release()
-
-        } catch (e) {
-            await conn2.rollback()
-            conn2.release()
-
-            _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-            return
         }
     }
 
+    if (valid.params['delete_list']) {
+        if (valid.params['delete_list'].length > 0) {
+            const conn2 = await _db.getConn()
+            try {
+                await conn2.beginTransaction()
+
+                for (let i = 0, e = valid['params']['delete_list'].length; i < e; i++) {
+
+                    valid['params']['fid'] = valid['params']['delete_list'][i]
+
+                    sql = `
+                        DELETE FROM 
+                            pool_relations
+                        WHERE
+                            group_id = :id
+                        AND
+                            friend_id = :fid
+                    `
+
+                    await _db.execQry(conn2, sql, valid.params)
+                }
+
+                await conn2.commit()
+                conn2.release()
+
+            } catch (e) {
+                await conn2.rollback()
+                conn2.release()
+
+                _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+                return
+            }
+        }
+    }
     _out.print(res, null, [true])
 
 })
