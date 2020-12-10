@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-
+const aligoapi = require('aligoapi');
 
 router.post('/signin', async (req, res) => {
 
@@ -125,6 +125,121 @@ router.post('/signup', async (req, res) => {
 
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
         return
+    }
+
+})
+
+
+router.post('/sms_auth', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const AuthData = {
+        key: process.env.ALIGO_API_KEY,
+        // 이곳에 발급받으신 api key를 입력하세요
+        user_id: process.env.ALIGO_USER_ID,
+        // 이곳에 userid를 입력하세요
+    }
+
+    const r = Math.floor(Math.random() * 888888) + 111111
+
+    aligoapi.sendMass(req, AuthData)
+        .then((r) => {
+            res.send(r)
+        })
+        .catch((e) => {
+            res.send(e)
+        })
+
+    _out.print(res, null, r)
+
+})
+
+
+router.post('/num_find', async (req, res) => {
+
+    let sql
+    let body = req.body
+    let valid = {}
+    let result
+
+    const params = [
+        {key: 'num', type: 'str', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+        sql = `
+            SELECT
+                id
+            FROM
+                users
+            WHERE
+                num = :num
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if (result.length < 1) {
+            _out.print(res, null, [false])
+            return
+        }
+        _out.print(res, null, result)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+router.post('/pass_change', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', type: 'num', required: true},
+        {key: 'password', value: 'password', type: 'str', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+
+        sql = `
+            UPDATE
+                users
+            SET
+                ${valid.update}
+            WHERE
+                id = :id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if (result.changedRows < 1) {
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        _out.print(res, null, [true])
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })

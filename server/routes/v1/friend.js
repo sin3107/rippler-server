@@ -348,7 +348,7 @@ router.post('/nickname_edit', async (req, res) => {
         result = await _db.qry(sql, valid.params)
 
         if (result.changedRows < 1) {
-            _out.print(res, _CONSTANT.INVALID_PARAMETER, null)
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
             return
         }
 
@@ -394,7 +394,7 @@ router.post('/favorite', async (req, res) => {
         result = await _db.qry(sql, valid.params)
 
         if (result.changedRows < 1) {
-            _out.print(res, _CONSTANT.INVALID_PARAMETER, null)
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
             return
         }
 

@@ -7,11 +7,10 @@ module.exports = {
         code: 1001
         ,message: "data not found"
     }
-    ,ALREADY_SIGNUPED: {
+    ,NOT_CHANGED: {
         code: 1002
-        ,message: "already signuped"
+        ,message: "not changed"
     }
-
     ,EMPTY_PARAMETER: {
         code: 2000
         ,message: "empty parameters"
@@ -28,16 +27,8 @@ module.exports = {
         code: 2003
         ,message: "not authorized"
     }
-    ,NOT_ALLOWED_PROVIDER: {
-        code: 2005
-        ,message: "not allowed provider"
-    }
-    ,AUTHORIZED_CHECK_FAULURE: {
-        code: 2006
-        ,message: "authorization check failure"
-    }
     ,EXISTS_NAME: {
-        code: 2007
+        code: 2004
         ,message: "the name exists"
     }
     ,JSON_PARSE_ERROR: {
@@ -48,7 +39,6 @@ module.exports = {
         code: 4001
         ,message: "not found"
     }
-
     ,ERROR_500: {
         code: 5000
         ,message: "something broken"

@@ -123,15 +123,15 @@ router.get('/single_list', async (req, res) => {
         {key: 'gid', type: 'num', required: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
         valid['params']['uid'] = req.uinfo['u']
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
-    try{
+    try {
 
         sql = `
             SELECT
@@ -157,12 +157,58 @@ router.get('/single_list', async (req, res) => {
 
         result = await _db.qry(sql, valid.params)
 
-        if(result.length < 1) {
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
 
         _out.print(res, null, result)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/favorite', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'group_id', value: 'id', type: 'num', required: true, where: true, eq: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            UPDATE
+                pools
+            SET
+                favorite = !favorite
+            WHERE
+                user_id = :uid
+            ${valid.where}
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.changedRows < 1){
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        _out.print(res, null, [true])
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -292,7 +338,7 @@ router.post('/update', async (req, res) => {
     }
 
 
-    if(valid.params['insert_list'] === undefined && valid.params['delete_list'] === undefined){
+    if (valid.params['insert_list'] === undefined && valid.params['delete_list'] === undefined) {
         try {
 
             sql = `
@@ -307,7 +353,7 @@ router.post('/update', async (req, res) => {
             result = await _db.qry(sql, valid.params)
 
             if (result.changedRows < 1) {
-                _out.print(res, _CONSTANT.INVALID_PARAMETER, null)
+                _out.print(res, _CONSTANT.NOT_CHANGED, null)
                 return
             }
             _out.print(res, null, [result.changedRows])
@@ -394,6 +440,69 @@ router.post('/update', async (req, res) => {
     _out.print(res, null, [true])
 
 })
+
+
+router.post('/delete', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'group_id', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    const conn = await _db.getConn()
+    try {
+        await conn.beginTransaction()
+
+        sql = `
+            DELETE FROM
+                pools
+            WHERE
+                user_id = :uid
+            AND
+                id = :group_id
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+
+
+
+        if(result['affectedRows'] < 1){
+            _out.err(res, _CONSTANT.ERROR_500, null, null)
+            return
+        }
+
+        sql = `
+            DELETE FROM
+                pool_relations
+            WHERE
+                group_id = :group_id
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        await conn.commit()
+        conn.release()
+
+        _out.print(res, null, [true])
+
+    } catch (e) {
+        await conn.rollback()
+        conn.release()
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
 
 
 module.exports = router
