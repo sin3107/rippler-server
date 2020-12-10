@@ -129,7 +129,7 @@ router.post('/signup', async (req, res) => {
 
 })
 
-
+/*
 router.post('/sms_auth', async (req, res) => {
 
     let sql
@@ -156,7 +156,7 @@ router.post('/sms_auth', async (req, res) => {
 
     _out.print(res, null, r)
 
-})
+})*/
 
 
 /*
