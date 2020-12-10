@@ -159,6 +159,7 @@ router.post('/sms_auth', async (req, res) => {
 })
 
 
+/*
 router.post('/num_find', async (req, res) => {
 
     let sql
@@ -243,6 +244,7 @@ router.post('/pass_change', async (req, res) => {
     }
 
 })
+*/
 
 
 router.post('/exists', async (req, res) => {
