@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const aligoapi = require('aligoapi');
+/*const aligoapi = require('aligoapi');*/
 
 router.post('/signin', async (req, res) => {
 
