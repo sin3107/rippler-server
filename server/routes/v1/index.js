@@ -14,6 +14,9 @@ const friend = require( `${__base}/routes/v1/friend` )
 const pool = require( `${__base}/routes/v1/pool` )
 const blind = require( `${__base}/routes/v1/blind` )
 
+const interest_profile = require( `${__base}/routes/v1/interest_profile` )
+const mail_profile = require( `${__base}/routes/v1/mail_profile` )
+
 router.get('/', async(req, res) => {
     var out = {success: true, message: 'hello api'}
     _out.print(res, out)
@@ -36,6 +39,9 @@ router.use('/user', user)
 router.use('/friend', friend)
 router.use('/pool', pool)
 router.use('/blind', blind)
+
+router.use('/interest_profile', interest_profile)
+router.use('/mail_profile', mail_profile)
 
 
 module.exports = router

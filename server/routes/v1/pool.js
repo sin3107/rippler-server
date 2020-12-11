@@ -462,6 +462,7 @@ router.post('/delete', async (req, res) => {
     }
 
     const conn = await _db.getConn()
+
     try {
         await conn.beginTransaction()
 
@@ -474,8 +475,6 @@ router.post('/delete', async (req, res) => {
                 id = :group_id
         `
         result = await _db.execQry(conn, sql, valid.params)
-
-
 
         if(result['affectedRows'] < 1){
             _out.err(res, _CONSTANT.ERROR_500, null, null)

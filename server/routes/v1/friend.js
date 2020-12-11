@@ -110,23 +110,23 @@ router.get('/item', async (req, res) => {
     try {
 
         sql = `
-                SELECT
-                    u.id,
-                    u.name as friend_name,
-                    wl.name as set_nickname,
-                    u.thumbnail,
-                    u.status_msg,
-                    wl.favorite
-                FROM
-                    whitelist wl
-                INNER JOIN
-                    users u
-                ON
-                    wl.friend_id = u.id
-                WHERE
-                    wl.user_id = :uid
-                    ${valid.where}
-            `
+            SELECT
+                u.id,
+                u.name as friend_name,
+                wl.name as set_nickname,
+                u.thumbnail,
+                u.status_msg,
+                wl.favorite
+            FROM
+                whitelist wl
+            INNER JOIN
+                users u
+            ON
+                wl.friend_id = u.id
+            WHERE
+                wl.user_id = :uid
+            ${valid.where}
+        `
 
         result = await _db.qry(sql, valid.params)
 
@@ -135,11 +135,11 @@ router.get('/item', async (req, res) => {
             return
         }
 
+        _out.print(res, null, result)
+
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
-
-    _out.print(res, null, result)
 
 })
 
@@ -167,7 +167,6 @@ router.post('/sync', async (req, res) => {
     try {
         await conn.beginTransaction()
 
-
         for (let i = 0, e = valid['params']['content_list'].length; i < e; i++) {
             sql = `
                 INSERT INTO
@@ -178,7 +177,7 @@ router.post('/sync', async (req, res) => {
                     (
                         :uid, :name, :num
                     );
-                    `
+            `
             valid.params['name'] = valid['params']['content_list'][i]['name']
             valid.params['num'] = valid['params']['content_list'][i]['num']
             result = await _db.execQry(conn, sql, valid.params)
@@ -186,7 +185,6 @@ router.post('/sync', async (req, res) => {
         }
         await conn.commit()
         conn.release()
-
 
     } catch (e) {
         await conn.rollback()

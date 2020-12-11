@@ -31,7 +31,7 @@ token : token
 
 request  
 ```bash
-# 회원 정보 호출
+# 풀 목록 호출
 curl -X GET --url 'http://rippler.chaeft.com/api/v1/pool/list' \
 -H 'token: token' \
 ```
@@ -71,6 +71,8 @@ response
 ```
 
 
+
+
 ## single list
 
 풀 단일 항목 친구 목록 호출
@@ -101,7 +103,7 @@ token : token
 
 request  
 ```bash
-# 회원 정보 호출
+# 풀 단일 항목 친구 호출
 curl -X GET --url 'http://rippler.chaeft.com/api/v1/pool/single_list?gid=1' \
 -H 'token: token' \
 ```
@@ -146,6 +148,65 @@ response
 ```
 
 
+
+## favorite
+
+즐겨찾기
+
+POST /api/v1/pool/favorite HTTP  
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|group_id|Int|풀 group id|o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 풀 즐겨찾기 설정
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/pool/favorite' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "group_id": 1
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+
+
 ## create
 
 풀 생성
@@ -180,7 +241,7 @@ token: token
 
 request  
 ```bash
-# 회원 정보 호출
+# 풀 생성
 curl -X POST --url 'http://rippler.chaeft.com/api/v1/pool/create' \
 -H 'Content-Type: application/json;charset=utf-8' 'token: token' \
 -d '{
@@ -210,6 +271,8 @@ response
 ```
 
 
+
+
 ## update
 
 풀 수정(이름, 썸네일, 멤버)
@@ -223,7 +286,7 @@ token: token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|id|String|풀 이름|o|
+|id|String|풀 id|o|
 |name|Array|풀에 들어갈 friend_id list|x|
 |thumbnail|Int|썸네일 id|x|
 |insert_list|Array|추가 할 friend_id list|x|
@@ -245,7 +308,7 @@ token: token
 
 request  
 ```bash
-# 회원 정보 호출
+# 풀 수정
 curl -X POST --url 'http://rippler.chaeft.com/api/v1/pool/update' \
 -H 'Content-Type: application/json;charset=utf-8' 'token: token' \
 -d '{
@@ -263,6 +326,65 @@ or
 }'
 ```
 
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+
+
+## delete
+
+풀 삭제
+
+POST /api/v1/pool/delete HTTP  
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|group_id|Int|풀 group id|o|
+
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 풀 삭제
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/pool/delete' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "group_id" : 1
+}'
+```
+ 
 response  
 ```bash
 {

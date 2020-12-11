@@ -84,6 +84,8 @@ response
 ```
 
 
+
+
 ## item
 
 친구 단수 호출
@@ -142,6 +144,8 @@ response
 ```
 
 
+
+
 ## sync
 최초 친구 동기화 시 /sync => /add   
 전화번호부 가져오기
@@ -150,7 +154,7 @@ POST /api/v1/friend/sync HTTP
 HOST: rippler.chaeft.com    
 Content-Type: application/json;charset=utf-8    
 token: token
-
+ 
 ### request
 
 |name|type|desc|required|
@@ -200,6 +204,8 @@ response
     }
 }
 ```
+
+
 
 
 ## add
@@ -254,6 +260,8 @@ response
     }
 }
 ```
+
+
 
 
 ## nickname edit
@@ -314,6 +322,8 @@ response
 ```
 
 
+
+
 ## favorite
 
 즐겨찾기
@@ -345,7 +355,7 @@ token: token
 
 request  
 ```bash
-# 친구 닉네임 변경
+# 친구 즐겨찾기
 curl -X POST --url 'http://rippler.chaeft.com/api/v1/friend/favorite' \
 -H 'Content-Type: application/json;charset=utf-8' 'token: token' \
 -d '{
@@ -368,6 +378,8 @@ response
     }
 }
 ```
+
+
 
 
 ## blind
