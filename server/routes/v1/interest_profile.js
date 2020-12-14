@@ -51,7 +51,7 @@ router.get('/info', async (req, res) => {
 
     try {
         _util.valid(body, params, valid)
-        valid.params['uid'] = req.body['u']
+        valid.params['uid'] = req.uinfo['u']
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
@@ -71,6 +71,7 @@ router.get('/info', async (req, res) => {
                 user_id = :uid
             ${valid.where}
         `
+
         result = await _db.qry(sql, valid.params)
 
         if (result.length < 1) {
@@ -128,7 +129,7 @@ router.post('/edit', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        _out.print(res, null, [true])
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -144,8 +145,8 @@ router.post('/add', async (req, res) => {
     let body = req.body
     let result
 
-    let insert = "nickname "
-    let value = ":nickname "
+    let insert = "user_id, profile_order, profile_type, nickname "
+    let value = ":uid, :profile_order, :profile_type, :nickname "
 
     const params = [
         {key: 'nickname', type: 'str', required: true},
@@ -176,11 +177,11 @@ router.post('/add', async (req, res) => {
         sql = `
             INSERT INTO
                 user_profiles(
-                    user_id, profile_order, profile_type, ${insert}
+                    ${insert}
                 )
             VALUES
                 (
-                    :uid, :profile_order, :profile_type, ${value}
+                    ${value}
                 )
         `
         result = await _db.qry(sql, valid.params)
@@ -242,69 +243,5 @@ router.post('/del', async (req, res) => {
     }
 
 })
-
-
-/*router.post('/order_set', async (req, res) => {
-
-    let sql
-    let valid = {}
-    let body = req.body
-    let result
-
-    const params = [
-        {}
-    ]
-
-    try {
-
-    } catch (e) {
-        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
-        return
-    }
-
-
-    try {
-
-        sql = `
-            
-        `
-
-    } catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-    }
-
-})
-
-
-router.post('/rep_profile', async (req, res) => {
-
-    let sql
-    let valid = {}
-    let body = req.body
-    let result
-
-    const params = [
-        {}
-    ]
-
-    try {
-
-    } catch (e) {
-        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
-        return
-    }
-
-
-    try {
-
-        sql = `
-            
-        `
-
-    } catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-    }
-
-})*/
 
 module.exports = router

@@ -357,7 +357,7 @@ response
 
 비밀번호 변경
 
-POST /api/v1/auth/num_find HTTP  
+POST /api/v1/auth/pass_change HTTP  
 HOST: rippler.chaeft.com
 Content-Type: application/json;charset=utf-8  
 
@@ -385,7 +385,7 @@ Content-Type: application/json;charset=utf-8
 request  
 ```bash
 # 가입 여부
-curl -X POST --url 'http://rippler.chaeft.com/api/v1/auth/num_find' \
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/auth/pass_change' \
 -H 'Content-Type: application/json;charset=utf-8' \
 -d '{
     "id": 1
