@@ -308,3 +308,181 @@ response
     }
 }
 ```
+
+
+
+## order set
+
+프로필 순서 설정
+
+POST /api/v1/interest_profile/order_set
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|profile_list|Array| 프로필id, 순서 |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 프로필 삭제
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest_profile/order_set' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "profile_list" : [
+            {"id":4, "profile_order": 2},
+            {"id":5, "profile_order": 1},
+            {"id":7, "profile_order": 3}
+    ]
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+## order set
+
+프로필 순서 설정
+
+POST /api/v1/interest_profile/order_set
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|profile_list|Array| 프로필id, 순서 |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 프로필 삭제
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest_profile/order_set' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "profile_list" : [
+            {"id":4, "profile_order": 2},
+            {"id":5, "profile_order": 1},
+            {"id":7, "profile_order": 3}
+    ]
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+
+## rep profile
+
+대표 프로필 설정
+
+POST /api/v1/interest_profile/rep_profile
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|profile_list|Array| 프로필id, 순서 |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 대표 프로필 설정
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest_profile/rep_profile' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "id" : 6
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
