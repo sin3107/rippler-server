@@ -17,6 +17,9 @@ const blind = require( `${__base}/routes/v1/blind` )
 const interest_profile = require( `${__base}/routes/v1/interest_profile` )
 const mail_profile = require( `${__base}/routes/v1/mail_profile` )
 
+const interest = require( `${__base}/routes/v1/interest` )
+const mail = require( `${__base}/routes/v1/mail` )
+
 router.get('/', async(req, res) => {
     var out = {success: true, message: 'hello api'}
     _out.print(res, out)
@@ -43,5 +46,7 @@ router.use('/blind', blind)
 router.use('/interest_profile', interest_profile)
 router.use('/mail_profile', mail_profile)
 
+router.use('/interest', interest)
+router.use('/mail', mail)
 
 module.exports = router

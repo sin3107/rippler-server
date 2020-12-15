@@ -346,4 +346,12 @@ router.post('/sms_auth_res', async (req, res) => {
 })
 
 
+router.post('/phone_chk', async (req, res) => {
+
+})
+
+
+
+
+
 module.exports = router

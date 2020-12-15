@@ -32,7 +32,7 @@ token : token
 request  
 ```bash
 # 친구 목록 호출
-curl -X POST --url 'http://rippler.chaeft.com/api/v1/friend/list' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/friend/list' \
 -H 'token: token' \
 ```
 
@@ -116,7 +116,7 @@ token: token
 request  
 ```bash
 # 회원 정보 호출
-curl -X POST --url 'http://rippler.chaeft.com/api/v1/friend/item?fid=1' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/friend/item?fid=1' \
 -H 'token: token' \
 ```
 
@@ -147,6 +147,7 @@ response
 
 
 ## sync
+
 최초 친구 동기화 시 /sync => /add   
 전화번호부 가져오기
 
