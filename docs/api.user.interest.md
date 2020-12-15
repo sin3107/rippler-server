@@ -1,13 +1,13 @@
-# Interest
+# Keyword
 
-관심사 피드
+관심사 키워드
 
 
 ## keyword list
 
 키워드 목록
 
-GET /api/v1/interest/keyword_list HTTP
+GET /api/v1/keyword/list HTTP
 HOST : rippler.chaeft.com
 token : token
 
@@ -34,7 +34,7 @@ token : token
 request  
 ```bash
 # 키워드 목록
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/friend/keyword_list' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/keyword/list' \
 -H 'token: token' \
 ```
 
@@ -86,7 +86,7 @@ response
 
 유저 키워드 설정
 
-POST /api/v1/interest/user_keyword_set HTTP
+POST /api/v1/keyword/user_setting HTTP
 HOST : rippler.chaeft.com
 token : token
 
@@ -116,7 +116,7 @@ token : token
 request  
 ```bash
 # 유저 키워드 설정
-curl -X POST --url 'http://rippler.chaeft.com/api/v1/friend/user_keyword_set' \
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/keyword/user_setting' \
 -H 'Content-Type: application/json;charset=utf-8' 'token: token' \
 -d '{
     "insert_list" : [1,2]
@@ -143,7 +143,7 @@ response
 
 내가 설정한 키워드 목록
 
-GET /api/v1/interest/my_keywords HTTP
+GET /api/v1/keyword/me HTTP
 HOST : rippler.chaeft.com
 token : token
 
@@ -170,7 +170,7 @@ token : token
 request  
 ```bash
 # 내가 설정한 키워드
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/friend/my_keywords' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/keyword/me' \
 -H 'token: token' \
 ```
 
@@ -207,7 +207,7 @@ response
 
 인기 키워드 목록
 
-GET /api/v1/interest/hot_keywords HTTP
+GET /api/v1/keyword/hot HTTP
 HOST : rippler.chaeft.com
 token : token
 
@@ -234,7 +234,7 @@ token : token
 request  
 ```bash
 # 인기 키워드
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/friend/hot_keywords' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/keyword/hot' \
 -H 'token: token' \
 ```
 

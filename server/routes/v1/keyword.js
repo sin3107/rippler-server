@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 
-router.get('/keyword_list', async (req, res) => {
+router.get('/list', async (req, res) => {
 
     let sql
     let result
@@ -43,7 +43,7 @@ router.get('/keyword_list', async (req, res) => {
 
 })
 
-router.post('/user_keyword_set', async (req, res) => {
+router.post('/user_setting', async (req, res) => {
 
     let sql
     let valid = {}
@@ -117,7 +117,7 @@ router.post('/user_keyword_set', async (req, res) => {
 
 })
 
-router.get('/my_keywords', async (req, res) => {
+router.get('/me', async (req, res) => {
 
     let sql
     let valid = {uid: req.uinfo['u']}
@@ -152,7 +152,7 @@ router.get('/my_keywords', async (req, res) => {
 })
 
 
-router.get('/hot_keywords', async (req, res) => {
+router.get('/hot', async (req, res) => {
 
     let sql
     let result
@@ -184,7 +184,10 @@ router.get('/hot_keywords', async (req, res) => {
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
+})
 
+
+router.get('/search', async (req, res) => {
 
 })
 
