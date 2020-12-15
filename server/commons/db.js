@@ -76,6 +76,21 @@ DB.prototype.getConn = function() {
 
 DB.prototype.execQry = function(c, q, p) {
     return new Promise((resolve, reject) => {
+
+        if (p && p.hasOwnProperty && p.hasOwnProperty('p')) {
+            if (!p.hasOwnProperty('limit')) {
+                p['limit'] = 10
+            }
+
+            if (p.page < 1) {
+                p.page = 0
+            } else {
+                p.page -= 1
+            }
+
+            p.page *= p.limit
+        }
+
         c.query(q, p, (e,r,f) => {
             if (e) {
                 reject(e)

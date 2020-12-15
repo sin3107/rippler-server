@@ -18,6 +18,7 @@ const interest_profile = require( `${__base}/routes/v1/interest_profile` )
 const mail_profile = require( `${__base}/routes/v1/mail_profile` )
 
 const keyword = require( `${__base}/routes/v1/keyword` )
+const interest = require( `${__base}/routes/v1/interest` )
 const mail = require( `${__base}/routes/v1/mail` )
 
 router.get('/', async(req, res) => {
@@ -47,6 +48,7 @@ router.use('/interest_profile', interest_profile)
 router.use('/mail_profile', mail_profile)
 
 router.use('/keyword', keyword)
+router.use('/interest', interest)
 router.use('/mail', mail)
 
 module.exports = router
