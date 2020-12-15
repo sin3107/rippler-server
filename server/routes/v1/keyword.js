@@ -48,7 +48,6 @@ router.post('/user_setting', async (req, res) => {
     let sql
     let valid = {}
     let body = req.body
-    let result
 
     const params = [
         {key: 'insert_list', type: 'arr', optional: true},
@@ -184,11 +183,6 @@ router.get('/hot', async (req, res) => {
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
-})
-
-
-router.get('/search', async (req, res) => {
-
 })
 
 module.exports = router
