@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 
-//const sample = require( `${__base}/routes/v1/sample` )
 
 const uploader = require( `${__base}/routes/v1/file/uploader` )
 const viewer = require( `${__base}/routes/v1/file/viewer` )
@@ -27,7 +26,6 @@ router.get('/', async(req, res) => {
     return
 })
 
-//router.use('/sample', sample)
 
 // image viewer router
 router.use('/file', viewer)
@@ -49,6 +47,7 @@ router.use('/mail_profile', mail_profile)
 
 router.use('/keyword', keyword)
 router.use('/interest', interest)
+
 router.use('/mail', mail)
 
 module.exports = router

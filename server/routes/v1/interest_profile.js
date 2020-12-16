@@ -21,6 +21,8 @@ router.get('/list', async (req, res) => {
                 user_profiles
             WHERE
                 user_id = :uid
+            ORDER BY
+                profile_order
         `
         result = await _db.qry(sql, valid)
 
@@ -448,8 +450,6 @@ router.get('/main', async (req, res) => {
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
-
-
 
 })
 

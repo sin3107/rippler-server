@@ -426,3 +426,80 @@ response
     }
 }
 ```
+
+
+
+## main
+ 
+프로필 메인 화면
+
+GET /api/v1/interest_profile/main HTTP  
+HOST: rippler.chaeft.com    
+token : token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|profile_id|Int| 프로필 id |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 프로필 메인화면 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/interest_profile/main?profile_id=:pid' \
+-H 'token: token' \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "id": 2,
+                "sum": 214,
+                "media": 2
+            },
+            {
+                "id": 3,
+                "sum": 392,
+                "media": 3
+            },
+            {
+                "id": 4,
+                "sum": 600,
+                "media": 4
+            },
+            {
+                "id": 5,
+                "sum": 1089,
+                "media": 5
+            },
+            {
+                "id": 6,
+                "sum": 666,
+                "media": 6
+            },
+        ],
+        "item_length": 5,
+        "total": 5
+    }
+}
+```

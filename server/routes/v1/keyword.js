@@ -43,6 +43,52 @@ router.get('/list', async (req, res) => {
 
 })
 
+
+router.get('/search', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'text', value: 'keyword_name', type: 'str', required: true, where: true, like: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            SELECT
+                id, keyword_name
+            FROM
+                keywords
+            WHERE
+                parent != 0 
+            ${valid.where}
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
 router.post('/user_setting', async (req, res) => {
 
     let sql
@@ -51,7 +97,7 @@ router.post('/user_setting', async (req, res) => {
 
     const params = [
         {key: 'insert_list', type: 'arr', optional: true},
-        {key: 'delete_list', type: 'arr', optional: true},
+        {key: 'delete_list', type: 'arr', optional: true}
     ]
 
     try {
