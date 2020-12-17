@@ -113,7 +113,7 @@ token : token
 
 request  
 ```bash
-# 키워드 목록
+# 키워드 검색
 curl -X GET --url 'http://rippler.chaeft.com/api/v1/keyword/search?text=우' \
 -H 'token: token' \
 ```

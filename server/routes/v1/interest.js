@@ -173,6 +173,8 @@ router.get('/list', async (req, res) => {
 
         if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            await conn.rollback()
+            conn.release()
             return
         }
 
@@ -194,6 +196,294 @@ router.get('/list', async (req, res) => {
 
         await conn.rollback()
         conn.release()
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
+router.get('/search', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key:'text', value: 'k.keyword_name', type: 'str', required: true, where: true, like: true},
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+
+        sql = `
+            SELECT DISTINCT
+                k.id, k.keyword_name
+            FROM
+                interest_keywords ik
+            INNER JOIN
+                keywords k
+            ON
+                ik.keyword_id = k.id
+            WHERE
+                ik.top = 1
+            ${valid.where}
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1){
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
+router.get('/search_result', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'keyword_id', type: 'num', required: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            SELECT
+                i.id,
+                i.profile_id,
+                i.user_id,
+                up.nickname,
+                up.thumbnail,
+                i.title,
+                i.contents,
+                i.create_by,
+                i.update_by,
+                (
+                    SELECT
+                        CONCAT('[',
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'id', ik1.id,
+                                    'keyword_id', ik1.keyword_id,
+                                    'name', k1.keyword_name,
+                                    'cnt', ik1.count
+                                ) ORDER BY ik1.count DESC
+                            )
+                        ,']')
+                    FROM
+                        interest_keywords ik1
+                    INNER JOIN
+                        keywords k1
+                    ON
+                        ik1.keyword_id = k1.id
+                    WHERE
+                        ik1.post_id = i.id
+                    AND
+                        ik1.top = 1
+                ) as keywords,
+                (
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'id', att.value,
+                                    'type', att.name
+                                )
+                            ),']'
+                        ) 
+                    FROM 
+                        interest_metas att 
+                    WHERE 
+                        att.post_id = i.id 
+                ) AS media,
+                (
+                    SELECT
+                        SUM(ik2.count)AS cnt
+                    FROM
+                        interest_keywords ik2
+                    WHERE
+                        ik2.post_id = i.id
+                ) as total_count
+            FROM
+                interest i
+            INNER JOIN
+                interest_keywords ik
+            ON
+                i.id = ik.post_id
+            LEFT JOIN
+                user_profiles up
+            ON
+                up.id = i.profile_id
+            WHERE
+                ik.keyword_id = :keyword_id
+            AND
+                ik.top = 1
+            ORDER BY
+                i.create_by DESC
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        const out = {item: result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                user_keywords
+            WHERE
+                user_id = :uid
+            AND
+                keyword_id = :keyword_id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['me'] = result[0]['cnt']
+
+        _out.print(res, null, out)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
+router.get('/item', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key:'post_id', type: 'num', required: true},
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+
+        sql = `
+            SELECT
+                i.id,
+                i.profile_id,
+                i.user_id,
+                case when i.user_id = :uid then 1 ELSE 0 end AS me,
+                up.nickname,
+                up.thumbnail,
+                i.create_by,
+                i.update_by,
+                i.title,
+                i.contents,
+                (
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'id', ik1.id, 
+                                    'keyword_id', ik1.keyword_id,
+                                    'keyword_name', k1.keyword_name,
+                                    'count', ik1.count
+                                ) ORDER BY ik1.count DESC
+                            ),
+                        ']')
+                    FROM 
+                        interest_keywords ik1
+                    INNER JOIN 
+                        keywords k1
+                    ON 
+                        ik1.keyword_id = k1.id
+                    WHERE
+                        ik1.post_id = :post_id
+                    ORDER BY
+                        ik1.count desc
+                ) as keywords,
+                (
+                    SELECT 
+                        SUM(COUNT) 
+                    FROM 
+                        interest_keywords 
+                    WHERE 
+                        post_id = :post_id
+                    GROUP BY 
+                        post_id
+                ) as total_count,
+                (
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'name', name,
+                                    'value', value
+                                )
+                            )
+                        )
+                    FROM 
+                        interest_metas 
+                    WHERE 
+                        post_id = :post_id
+                ) as medias
+            FROM 
+                interest i
+            LEFT JOIN 
+                user_profiles up
+            ON
+                i.profile_id = up.id
+            WHERE
+                i.id = :post_id;
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
@@ -366,7 +656,7 @@ router.post('/update_feed', async (req, res) => {
 
 })
 
-router.post('/delete_feed', async(req, res) => {
+router.post('/delete_feed', async (req, res) => {
 
     let sql
     let valid = {}
@@ -425,8 +715,10 @@ router.post('/delete_feed', async(req, res) => {
         `
         result = await _db.execQry(conn, sql, valid.params)
 
-        if(result.affectedRows < 1) {
+        if (result.affectedRows < 1) {
             _out.print(res, _CONSTANT.ERROR_500, null)
+            await conn.rollback()
+            conn.release()
             return
         }
 
@@ -469,7 +761,7 @@ router.post('/delete_feed', async(req, res) => {
 
         _out.print(res, null, [true])
 
-    }catch (e) {
+    } catch (e) {
         await conn.rollback()
         conn.release()
 
@@ -477,7 +769,6 @@ router.post('/delete_feed', async(req, res) => {
     }
 
 })
-
 
 
 router.get('/best_comments', async (req, res) => {
@@ -533,7 +824,7 @@ router.get('/best_comments', async (req, res) => {
                         ic2.profile_id = up.id
                     WHERE 
                         ic1.parent = ic2.id
-            ) as child_comments
+            ) as parent_comment
             FROM
                 interest_comments ic1
             WHERE
@@ -559,7 +850,7 @@ router.get('/best_comments', async (req, res) => {
 })
 
 
-router.get('/comments', async(req, res) => {
+router.get('/comments', async (req, res) => {
 
     let sql
     let valid = {}
@@ -570,6 +861,471 @@ router.get('/comments', async(req, res) => {
         {key: 'post_id', type: 'num', required: true}
     ]
 
+    try {
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+
+        sql = `
+            SELECT 
+                ic1.id,
+                ic1.post_id,
+                ic1.profile_id,
+                ic1.user_id,
+                up1.nickname,
+                up1.thumbnail,
+                ic1.contents,
+                ic1.count,
+                ic1.create_by,
+                ic1.update_by,
+                (
+                    SELECT 
+                        COUNT(*) 
+                    FROM 
+                        interest_comments 
+                    WHERE 
+                        post_id = :post_id
+                    AND 
+                        parent = 0
+                ) as total_count,
+                case when ic1.user_id = :uid then 1 ELSE 0 END AS me
+            FROM
+                interest_comments ic1
+            LEFT JOIN 
+                user_profiles up1 
+            ON
+                ic1.profile_id = up1.id
+            WHERE 
+                ic1.post_id = :post_id AND parent = 0
+            ORDER BY 
+                ic1.create_by DESC;
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if (result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.get('/child_comments', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'comment_id', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+
+        sql = `
+            SELECT ic1.id,
+                ic1.post_id,
+                ic1.profile_id,
+                ic1.user_id,
+                up1.nickname,
+                up1.thumbnail,
+                ic1.parent,
+                ic1.contents,
+                ic1.COUNT,
+                ic1.create_by,
+                ic1.update_by,
+                case when ic1.user_id = :uid then 1 ELSE 0 END AS me
+            FROM
+                interest_comments ic1
+            LEFT JOIN 
+                user_profiles up1 
+            ON 
+                ic1.profile_id = up1.id
+            WHERE 
+                ic1.parent = :comment_id
+            ORDER BY 
+                ic1.create_by DESC
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if (result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/insert_comment', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'post_id', type: 'num', required: true},
+        {key: 'profile_id', type: 'num', required: true},
+        {key: 'parent', type: 'num', required: true},
+        {key: 'contents', type: 'str', required: true},
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+
+    try {
+        sql = `
+            INSERT INTO 
+                interest_comments (
+                    post_id, profile_id, user_id, parent, contents, count
+                )
+            VALUES 
+                (
+                    :post_id, :profile_id, :uid, :parent, :contents, 0
+                )
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if (result.insertId < 1) {
+            _out.print(res, _CONSTANT.ERROR_500, null)
+            return
+        }
+
+        _out.print(res, null, [result.insertId])
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/update_comment', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', value: 'id', type: 'num', required: true, where: true, eq: true},
+        {key: 'post_id', value: 'post_id', type: 'num', required: true, where: true, eq: true},
+        {key: 'profile_id', type: 'num', required: true},
+        {key: 'contents', value: 'contents', type: 'str', required: true, update: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                user_profiles
+            WHERE
+                user_id = :uid
+            AND
+                id = :profile_id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if (result[0]['cnt'] < 1) {
+            _out.print(res, _CONSTANT.NOT_AUTHORIZED, null)
+            return
+        }
+
+        sql = `
+            UPDATE
+                interest_comments
+            SET
+                ${valid.update}, update_by = current_timestamp()
+            WHERE
+                user_id = :uid
+            AND
+                id = :id
+            AND
+                post_id = :post_id
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if (result.changedRows < 1) {
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        _out.print(res, null, [true])
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/delete_comment', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', value: 'id', type: 'num', required: true, where: true, eq: true},
+        {key: 'post_id', value: 'post_id', type: 'num', required: true, where: true, eq: true},
+        {key: 'parent', type: 'num', required: true}
+    ]
+
+
+    try {
+        _util.valid(body, params, valid)
+        valid['params']['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+
+    const conn = await _db.getConn()
+    try {
+        await conn.beginTransaction()
+
+        if (valid['params']['parent'] === 0) {
+            sql = `
+                DELETE A FROM 
+                    interest_comment_relations A
+                INNER JOIN 
+                    interest_comments B 
+                ON 
+                    A.ic_id = B.id
+                WHERE 
+                    B.parent = :id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                DELETE FROM 
+                    interest_comments 
+                WHERE
+                    parent = :id
+                AND
+                    post_id = :post_id
+            `
+
+            await _db.execQry(conn, sql, valid.params)
+
+        }
+
+        sql = `
+            DELETE FROM 
+                interest_comment_relations
+            WHERE
+                ic_id = :id
+        `
+
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            DELETE FROM 
+                interest_comments 
+            WHERE 
+                user_id = :uid
+            ${valid.where}
+        `
+
+        result = await _db.execQry(conn, sql, valid.params)
+
+        if (result.affectedRows < 1) {
+            _out.print(res, _CONSTANT.ERROR_500, null)
+            await conn.rollback()
+            conn.release()
+            return
+        }
+
+        await conn.commit()
+        conn.release()
+        _out.print(res, null, [true])
+
+    } catch (e) {
+
+        await conn.rollback()
+        conn.release()
+
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
+router.post('/like_comment', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', type: 'num', required: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    const conn = await _db.getConn()
+    try{
+        await conn.beginTransaction()
+
+        sql = `
+            INSERT INTO
+                interest_comment_relations(
+                    ic_id, user_id
+                )
+            VALUES
+                (
+                    :id, :uid
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            UPDATE
+                interest_comments
+            SET
+                count = count + 1
+            WHERE 
+                id = :id
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+
+        if(result.changedRows < 1) {
+            await conn.rollback()
+            conn.release()
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        await conn.commit()
+        conn.release()
+
+        _out.print(res, null, [true])
+
+    }catch (e) {
+        await conn.rollback()
+        conn.release()
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
+router.post('/un_like_comment', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', type: 'num', required: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    const conn = await _db.getConn()
+    try{
+        await conn.beginTransaction()
+
+        sql = `
+            DELETE FROM
+                interest_comment_relations
+            WHERE
+                ic_id = :id
+            AND
+                user_id = :uid
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            UPDATE
+                interest_comments
+            SET
+                count = count - 1
+            WHERE 
+                id = :id
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+
+        if(result.changedRows < 1) {
+            await conn.rollback()
+            conn.release()
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        await conn.commit()
+        conn.release()
+
+        _out.print(res, null, [true])
+
+    }catch (e) {
+        await conn.rollback()
+        conn.release()
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
 
 })
 
