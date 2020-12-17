@@ -150,6 +150,7 @@ router.post('/sync', async (req, res) => {
     let valid = {}
     let body = req.body
     let result
+    let values
 
     const params = [
         {key: 'content_list', type: 'arr', required: true}
@@ -163,36 +164,33 @@ router.post('/sync', async (req, res) => {
         return
     }
 
-    const conn = await _db.getConn()
     try {
-        await conn.beginTransaction()
 
-        for (let i = 0, e = valid['params']['content_list'].length; i < e; i++) {
-            sql = `
-                INSERT INTO
-                    num_books(
-                        user_id, name, num
-                    )
-                VALUES
-                    (
-                        :uid, :name, :num
-                    );
-            `
-            valid.params['name'] = valid['params']['content_list'][i]['name']
-            valid.params['num'] = valid['params']['content_list'][i]['num']
-            result = await _db.execQry(conn, sql, valid.params)
+        values = `(:uid, '${valid['params']['content_list'][0]['name']}','${valid['params']['content_list'][0]['num']}')`
 
+        for (let i = 1, e = valid['params']['content_list'].length; i < e; i++) {
+            values += `,(:uid, '${valid['params']['content_list'][i]['name']}','${valid['params']['content_list'][i]['num']}')`
         }
-        await conn.commit()
-        conn.release()
+
+        sql = `
+            INSERT ignore INTO
+                num_books(user_id, name, num)
+            VALUES
+            ${values}       
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.affectedRows < 1) {
+            _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
+            return
+        }
+
+        _out.print(res, null, [result.affectedRows])
 
     } catch (e) {
-        await conn.rollback()
-        conn.release()
-        _out.err(res, _CONSTANT.ERROR_500, null)
-        return
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
-    _out.print(res, null, [valid['params']['content_list'].length])
+
 
 })
 
@@ -201,6 +199,8 @@ router.post('/add', async (req, res) => {
     let sql
     let valid = {}
     let result
+    let values
+
 
     try {
         valid['uid'] = req.uinfo['u']
@@ -268,46 +268,37 @@ router.post('/add', async (req, res) => {
         return
     }
 
-
-    const conn = await _db.getConn()
-
     try {
-        await conn.beginTransaction()
 
-        for (let i = 0, e = result.length; i < e; i++) {
+        values = `( :uid, ${result[0]['id']})`
 
-            sql = `
-                INSERT INTO
-                    whitelist(
-                        user_id, friend_id
-                    )
-                VALUES
-                    (
-                        :uid, :fid
-                    )
-            `
-            valid['fid'] = result[i]['id']
+        for (let i = 1, e = result.length; i < e; i++) {
 
-            await _db.execQry(conn, sql, valid)
+            values += `, ( :uid, ${result[i]['id']})`
+
         }
 
-        await conn.commit()
-        conn.release()
+        sql = `
+            INSERT INTO
+                whitelist(
+                    user_id, friend_id
+                )
+            VALUES 
+            ${values}
+            `
 
-    } catch (e) {
-        await conn.rollback()
-        conn.release()
+        result = await _db.qry(sql, valid)
 
-        if (e.code === 'ER_DATA_TOO_LONG') {
-            _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        if(result.affectedRows < 1) {
+            _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
             return
         }
 
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
-    }
+        _out.print(res, null, [result.affectedRows])
 
-    _out.print(res, null, [true])
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
 
 })
 
