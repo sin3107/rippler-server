@@ -1059,3 +1059,256 @@ response
     }
 }
 ```
+
+
+
+## feed keywords
+ 
+게시물에 대한 투표 키워드 전체 호출
+
+GET /api/v1/interest/feed_keywords HTTP  
+HOST: rippler.chaeft.com    
+token : token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|post_id|Int| 게시글 id |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 게시물에 대한 투표 키워드 전체 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/interest/feed_keywords?post_id=1' \
+-H 'token: token' \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "id": 47,
+                "post_id": 13,
+                "keyword_id": 31,
+                "count": 2,
+                "keyword_name": "평가",
+                "me": 0
+            },
+            {
+                "id": 48,
+                "post_id": 13,
+                "keyword_id": 39,
+                "count": 1,
+                "keyword_name": "헤비급",
+                "me": 1
+            },
+            {
+                "id": 55,
+                "post_id": 13,
+                "keyword_id": 42,
+                "count": 1,
+                "keyword_name": "강호동",
+                "me": 1
+            }
+        ],
+        "item_length": 3,
+        "total": 3
+    }
+}
+```
+
+
+
+## keyword like
+
+게시물에 등록된 키워드에 투표
+
+POST /api/v1/interest/keyword_like
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|id|Int| 게시물에 등록된 키워드 id |o|
+|post_id|Int| 게시물 id |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 게시물 키워드 투표
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest/keyword_like' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "id": 55,
+    "post_id": 13
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+
+## keyword un like
+
+게시물에 등록된 키워드에 투표 해제
+
+POST /api/v1/interest/keyword_like
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|id|Int| 게시물에 등록된 키워드 id |o|
+|post_id|Int| 게시물 id |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 게시물 키워드 투표 해제
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest/keyword_un_like' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "id": 55,
+    "post_id": 13
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+
+## keyword add
+
+게시물에 투표 키워드 등록
+
+POST /api/v1/interest/keyword_add
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|id|Int| 게시물에 등록된 키워드 id |o|
+|post_id|Int| 게시물 id |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 게시물 투표 키워드 추가
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest/keyword_add' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "post_id": 13,
+    "keyword_list": ["감감", "남남"]
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```

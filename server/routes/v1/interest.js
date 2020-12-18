@@ -171,12 +171,27 @@ router.get('/list', async (req, res) => {
         `
         result = await _db.execQry(conn, sql, valid.params)
 
+        const out = {item: result}
+
         if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             await conn.rollback()
             conn.release()
             return
         }
+
+        sql = `
+            SELECT DISTINCT 
+                COUNT(A.post_id) AS cnt
+            FROM 
+                TEMP_POST A
+            INNER JOIN 
+                interest B 
+            ON
+                A.POST_ID = B.id
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+        out['total'] = result[0]['cnt']
 
         sql = `
             DROP TABLE TEMP_POST_TOTAL_COUNT;
@@ -190,7 +205,7 @@ router.get('/list', async (req, res) => {
 
         await conn.commit()
         conn.release()
-        _out.print(res, null, result)
+        _out.print(res, null, out)
 
     } catch (e) {
 
@@ -202,8 +217,7 @@ router.get('/list', async (req, res) => {
 })
 
 
-
-router.get('/search', async(req, res) => {
+router.get('/search', async (req, res) => {
 
     let sql
     let valid = {}
@@ -211,13 +225,13 @@ router.get('/search', async(req, res) => {
     let result
 
     const params = [
-        {key:'text', value: 'k.keyword_name', type: 'str', required: true, where: true, like: true},
+        {key: 'text', value: 'k.keyword_name', type: 'str', required: true, where: true, like: true},
     ]
 
     try {
         _util.valid(body, params, valid)
         valid.params['uid'] = req.uinfo['u']
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
@@ -239,22 +253,21 @@ router.get('/search', async(req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        if(result.length < 1){
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
 
         _out.print(res, null, result)
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })
 
 
-
-router.get('/search_result', async(req, res) => {
+router.get('/search_result', async (req, res) => {
 
     let sql
     let valid = {}
@@ -265,15 +278,15 @@ router.get('/search_result', async(req, res) => {
         {key: 'keyword_id', type: 'num', required: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
         valid['params']['uid'] = req.uinfo['u']
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
-    try{
+    try {
 
         sql = `
             SELECT
@@ -352,7 +365,7 @@ router.get('/search_result', async(req, res) => {
 
         result = await _db.qry(sql, valid.params)
 
-        if(result.length < 1) {
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
@@ -375,15 +388,14 @@ router.get('/search_result', async(req, res) => {
 
         _out.print(res, null, out)
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })
 
 
-
-router.get('/item', async(req, res) => {
+router.get('/item', async (req, res) => {
 
     let sql
     let valid = {}
@@ -391,13 +403,13 @@ router.get('/item', async(req, res) => {
     let result
 
     const params = [
-        {key:'post_id', type: 'num', required: true},
+        {key: 'post_id', type: 'num', required: true},
     ]
 
     try {
         _util.valid(body, params, valid)
         valid.params['uid'] = req.uinfo['u']
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
@@ -476,19 +488,18 @@ router.get('/item', async(req, res) => {
 
         result = await _db.qry(sql, valid.params)
 
-        if(result.length < 1) {
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
 
         _out.print(res, null, result)
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })
-
 
 
 router.post('/insert_feed', async (req, res) => {
@@ -1198,8 +1209,7 @@ router.post('/delete_comment', async (req, res) => {
 })
 
 
-
-router.post('/like_comment', async(req, res) => {
+router.post('/like_comment', async (req, res) => {
 
     let sql
     let valid = {}
@@ -1210,16 +1220,16 @@ router.post('/like_comment', async(req, res) => {
         {key: 'id', type: 'num', required: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
         valid.params['uid'] = req.uinfo['u']
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
     const conn = await _db.getConn()
-    try{
+    try {
         await conn.beginTransaction()
 
         sql = `
@@ -1244,7 +1254,7 @@ router.post('/like_comment', async(req, res) => {
         `
         result = await _db.execQry(conn, sql, valid.params)
 
-        if(result.changedRows < 1) {
+        if (result.changedRows < 1) {
             await conn.rollback()
             conn.release()
             _out.print(res, _CONSTANT.NOT_CHANGED, null)
@@ -1256,7 +1266,7 @@ router.post('/like_comment', async(req, res) => {
 
         _out.print(res, null, [true])
 
-    }catch (e) {
+    } catch (e) {
         await conn.rollback()
         conn.release()
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -1265,8 +1275,7 @@ router.post('/like_comment', async(req, res) => {
 })
 
 
-
-router.post('/un_like_comment', async(req, res) => {
+router.post('/un_like_comment', async (req, res) => {
 
     let sql
     let valid = {}
@@ -1277,16 +1286,16 @@ router.post('/un_like_comment', async(req, res) => {
         {key: 'id', type: 'num', required: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
         valid.params['uid'] = req.uinfo['u']
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
     const conn = await _db.getConn()
-    try{
+    try {
         await conn.beginTransaction()
 
         sql = `
@@ -1309,7 +1318,7 @@ router.post('/un_like_comment', async(req, res) => {
         `
         result = await _db.execQry(conn, sql, valid.params)
 
-        if(result.changedRows < 1) {
+        if (result.changedRows < 1) {
             await conn.rollback()
             conn.release()
             _out.print(res, _CONSTANT.NOT_CHANGED, null)
@@ -1321,7 +1330,7 @@ router.post('/un_like_comment', async(req, res) => {
 
         _out.print(res, null, [true])
 
-    }catch (e) {
+    } catch (e) {
         await conn.rollback()
         conn.release()
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -1329,5 +1338,422 @@ router.post('/un_like_comment', async(req, res) => {
 
 })
 
+
+router.post('/keyword_like', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', type: 'num', required: true},
+        {key: 'post_id', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    let check = await threeKeywords(valid.params['uid'], valid.params['post_id'])
+
+    if (check > 2) {
+        _out.print(res, _CONSTANT.EXCEED_COUNT, null)
+        return
+    }
+
+
+    const conn = await _db.getConn()
+    try {
+        await conn.beginTransaction()
+
+        sql = `
+            UPDATE 
+                interest_keywords 
+            SET 
+                count = count + 1 
+            WHERE 
+                post_id = :post_id 
+            AND 
+                id = :id
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+        if (result.changedRows < 1) {
+            await conn.rollback()
+            conn.release()
+            _out.print(res, _CONSTANT.ERROR_500, [1])
+            return
+        }
+
+        sql = `
+            INSERT INTO
+                interest_keyword_relations(
+                    ik_id, user_id
+                )
+            VALUES
+                (
+                    :id, :uid
+                )
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            UPDATE 
+                interest_keywords 
+            SET 
+                top = 0 
+            WHERE 
+                post_id = :post_id
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            UPDATE 
+                interest_keywords 
+            SET 
+                top = 1 
+            WHERE 
+                post_id = :post_id
+            ORDER BY
+                count DESC
+            limit 3
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+        if (result.changedRows < 1) {
+            await conn.rollback()
+            conn.release()
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        await conn.commit()
+        conn.release()
+        _out.print(res, null, [true])
+
+    } catch (e) {
+        await conn.rollback()
+        conn.release()
+
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/keyword_un_like', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', type: 'num', required: true},
+        {key: 'post_id', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+
+    const conn = await _db.getConn()
+    try {
+        await conn.beginTransaction()
+
+        sql = `
+            UPDATE 
+                interest_keywords 
+            SET 
+                count = count - 1 
+            WHERE 
+                post_id = :post_id 
+            AND 
+                id = :id
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+        if (result.changedRows < 1) {
+            await conn.rollback()
+            conn.release()
+            _out.print(res, _CONSTANT.ERROR_500, null)
+            return
+        }
+
+        sql = `
+            DELETE FROM 
+                interest_keyword_relations
+            WHERE
+                ik_id = :id 
+            AND
+                user_id = :uid
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+        if (result.affectedRows < 1) {
+            await conn.rollback()
+            conn.release()
+            _out.print(res, _CONSTANT.ERROR_500, null)
+            return
+        }
+
+
+        sql = `
+            UPDATE 
+                interest_keywords 
+            SET 
+                top = 0 
+            WHERE 
+                post_id = :post_id
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            UPDATE 
+                interest_keywords 
+            SET 
+                top = 1 
+            WHERE 
+                post_id = :post_id
+            ORDER BY
+                count desc
+            limit 3
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+        if (result.changedRows < 1) {
+            await conn.rollback()
+            conn.release()
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        await conn.commit()
+        conn.release()
+        _out.print(res, null, [true])
+
+    } catch (e) {
+        await conn.rollback()
+        conn.release()
+
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/keyword_add', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'post_id', type: 'num', required: true},
+        {key: 'keyword_list', type: 'arr', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    let check = await threeKeywords(valid.params['uid'], valid.params['post_id'])
+
+    check = check + valid.params['keyword_list'].length - 1
+
+    if (check > 2) {
+        _out.print(res, _CONSTANT.EXCEED_COUNT, null)
+        return
+    }
+
+    const conn = await _db.getConn()
+
+    try {
+        await conn.beginTransaction()
+
+        for (let i = 0, e = valid['params']['keyword_list'].length; i < e; i++) {
+
+            valid['params']['keyword_name'] = valid['params']['keyword_list'][i]
+
+            sql = `
+                INSERT INTO
+                    keywords(
+                        keyword_name, parent, count
+                    )
+                VALUES
+                    (
+                        :keyword_name, 4, 1
+                    )
+                ON DUPLICATE KEY UPDATE count = count + 1;
+            `
+            result = await _db.execQry(conn, sql, valid.params)
+
+            valid['params']['keyword_id'] = result.insertId
+
+            sql = `
+                INSERT INTO
+                    interest_keywords(
+                        post_id, keyword_id, count, top
+                    )
+                VALUES
+                    (
+                        :post_id, :keyword_id, 1, 0
+                    )
+                ON DUPLICATE KEY UPDATE count = count + 1;
+            `
+            result = await _db.execQry(conn, sql, valid.params)
+
+            valid['params']['ik_id'] = result.insertId
+
+
+            sql = `
+                INSERT INTO
+                    interest_keyword_relations(
+                        ik_id, user_id
+                    )
+                VALUES
+                    (
+                        :ik_id, :uid
+                    )
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+        }
+
+        await conn.commit()
+        conn.release()
+
+        _out.print(res, null, [true])
+
+    } catch (e) {
+        await conn.rollback()
+        conn.release()
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.get('/feed_keywords', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'post_id', type: 'num', required: true},
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'page', value: 'page', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+
+        sql = `
+            SELECT 
+                ik.id,
+                ik.post_id,
+                ik.keyword_id,
+                ik.count,
+                k.keyword_name,
+                (
+                    SELECT
+                        COUNT(*) AS cnt
+                    FROM
+                        interest_keyword_relations ikr
+                    WHERE
+                        ikr.ik_id = ik.id
+                    AND
+                        ikr.user_id = :uid
+                )AS me
+            FROM
+                interest_keywords ik
+            INNER JOIN
+                keywords k
+            ON 
+                ik.keyword_id = k.id
+            WHERE 
+                post_id = :post_id
+            ORDER BY 
+                count DESC
+            LIMIT
+                :page, :limit
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if (result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        const out = {item: result}
+
+        sql = `
+            SELECT 
+                COUNT(*) as cnt
+            FROM
+                interest_keywords ik
+            WHERE 
+                post_id = :post_id
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+async function threeKeywords(uid, pid) {
+
+    let sql = `
+        SELECT
+            COUNT(*) AS cnt
+        FROM
+            interest_keywords ik
+        INNER JOIN
+            interest_keyword_relations ikr
+        ON
+            ik.id = ikr.ik_id
+        WHERE
+            ik.post_id = :pid
+        AND
+            ikr.user_id = :uid
+    `
+    let sql_params = {uid: uid, pid: pid}
+    let result
+
+    try {
+        result = await _db.qry(sql, sql_params)
+    } catch (e) {
+        throw e
+    }
+
+    return result[0]['cnt']
+}
 
 module.exports = router

@@ -31,6 +31,10 @@ module.exports = {
         code: 2004
         ,message: "the name exists"
     }
+    ,EXCEED_COUNT: {
+        code: 2005
+        ,message: "exceed number"
+    }
     ,JSON_PARSE_ERROR: {
         code: 4000
         ,message: "json parse error"
