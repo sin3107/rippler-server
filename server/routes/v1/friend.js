@@ -24,9 +24,9 @@ router.get('/list', async (req, res) => {
             SELECT
                 u.id, 
                 u.name as friend_name, 
-                wl.name as set_nickname, 
-                u.thumbnail, 
-                u.status_msg,
+                CASE WHEN wl.name IS NULL THEN u.name ELSE wl.name END AS nickname,
+                CASE WHEN bl.user_id IS NULL THEN u.thumbnail ELSE bl.thumbnail END AS thumbnail,
+                CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
                 wl.favorite
             FROM
                 whitelist wl
@@ -34,6 +34,10 @@ router.get('/list', async (req, res) => {
                 users u
             ON
                 wl.friend_id = u.id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = wl.friend_id
             WHERE
                 wl.user_id = :uid
         `
