@@ -508,13 +508,13 @@ router.post('/insert_feed', async (req, res) => {
     let valid = {}
     let body = req.body
     let result
+    let values
 
     const params = [
         {key: 'profile_id', type: 'num', required: true},
         {key: 'title', type: 'str', required: true},
         {key: 'contents', type: 'str', required: true},
-        {key: 'media', type: 'num', optional: true},
-        {key: 'media_type', type: 'str', optional: true},
+        {key: 'media', type: 'arr', optional: true},
         {key: 'keyword_list', type: 'arr', required: true}
     ]
 
@@ -545,18 +545,24 @@ router.post('/insert_feed', async (req, res) => {
 
         valid['params']['post_id'] = result.insertId
 
-        sql = `
-            INSERT INTO 
-                interest_metas(
-                    post_id, name, value
-                )
-            VALUES 
-                (
-                    :post_id, :media_type, :media
-                )
-        `
-        await _db.execQry(conn, sql, valid.params)
+        values = `(:post_id, ${valid['params']['media'][0]['type']}, '${valid['params']['media'][0]['id']}')`
 
+        if (valid['param']['media']) {
+            for (let i = 1, e = valid['params']['media'].length; i < e; i++) {
+
+                values += `,(:post_id, ${valid['params']['media'][i]['type']}, '${valid['params']['media'][i]['id']}')`
+
+                sql = `
+                    INSERT INTO 
+                        interest_metas(
+                            post_id, name, value
+                        )
+                    VALUES 
+                        ${values}
+                `
+                await _db.execQry(conn, sql, valid.params)
+            }
+        }
 
         for (let i = 0, e = valid.params['keyword_list'].length; i < e; i++) {
 
@@ -1755,5 +1761,6 @@ async function threeKeywords(uid, pid) {
 
     return result[0]['cnt']
 }
+
 
 module.exports = router

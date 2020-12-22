@@ -20,6 +20,8 @@ const keyword = require( `${__base}/routes/v1/keyword` )
 const interest = require( `${__base}/routes/v1/interest` )
 const mail = require( `${__base}/routes/v1/mail` )
 
+const report = require( `${__base}/routes/v1/report` )
+
 router.get('/', async(req, res) => {
     var out = {success: true, message: 'hello api'}
     _out.print(res, out)
@@ -47,7 +49,8 @@ router.use('/mail_profile', mail_profile)
 
 router.use('/keyword', keyword)
 router.use('/interest', interest)
-
 router.use('/mail', mail)
+
+router.use('/report', report)
 
 module.exports = router

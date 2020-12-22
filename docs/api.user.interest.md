@@ -303,8 +303,7 @@ token: token
 |profile_id|Int| 프로필 id |o|
 |title|String| 제목 |o|
 |contents|String| 내용 |o|
-|media|Int| 첨부파일 id |x|
-|media_type|String| 첨부파일 type(image / video) |x|
+|media|Array| 첨부파일 배열 |x|
 |keyword_list|Array| 키워드 text 배열 |o|
 
 
@@ -331,8 +330,9 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest/insert_feed' \
     "profile_id" : 7,
     "title" : "abcd",
     "contents": "efgh",
-    "media" : 1,
-    "media_type" : "image",
+    "media" : [
+        {"id": 1, "type": "video"} // video or image
+    ],
     "keyword_list": [
         "평가", "헤비급"
     ]
