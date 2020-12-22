@@ -118,6 +118,26 @@ router.post('/signup', async (req, res) => {
                 `
             await _db.execQry(conn, sql, valid.params)
         }
+
+        sql = `
+            INSERT INTO
+                notifications(
+                    user_id,
+                    mail_feed_count,
+                    mail_comment,
+                    mail_comment_child,
+                    interest_keyword,
+                    interest_comment,
+                    interest_comment_child,
+                    interest_comment_count
+                )
+            VALUES
+                (
+                   :id, 1, 1, 1 ,1 ,1 , 1, 1
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
         await conn.commit()
         conn.release()
 
