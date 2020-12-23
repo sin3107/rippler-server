@@ -5,6 +5,7 @@
 | 1000 | success | API 정상실행 |
 | 1001 | data not found | 반환받을 값 없음 |
 | 1002 | not changed | 변경되지 않음(이전과 같거나, 해당하는 row가 없음) |
+| 1003 | upload failed | 업로드 실패 |
 | 2000 | empty parameters | 인자 값 비어있음 |
 | 2001 | invalid parameters | 인자 값 형식오류 |
 | 2002 | invalid token | 토큰없음 |

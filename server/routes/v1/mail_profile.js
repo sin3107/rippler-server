@@ -80,4 +80,76 @@ router.post('/edit', async (req, res) => {
 })
 
 
+
+
+router.get('/main', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+
+    ]
+
+    try{
+        valid['params']['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            SELECT
+                i.id, 
+                (
+                    SELECT
+                        SUM(ik.count) as sum
+                    FROM
+                        interest_keywords ik
+                    WHERE
+                        ik.post_id = i.id
+                ) as sum ,
+                (
+                    SELECT
+                        value
+                    FROM
+                        interest_metas im
+                    WHERE
+                        im.post_id = i.id
+                    LIMIT
+                        1
+                ) as media
+            FROM
+                interest i
+            INNER JOIN
+                user_profiles up
+            ON
+                i.profile_id = up.id
+            WHERE
+                i.profile_id = :profile_id
+            AND
+                up.user_id = :uid
+        `
+
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
 module.exports = router

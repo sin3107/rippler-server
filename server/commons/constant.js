@@ -11,6 +11,10 @@ module.exports = {
         code: 1002
         ,message: "not changed"
     }
+    ,UPLOAD_FAILED: {
+        code: 1003
+        ,message: "upload failed"
+    }
     ,EMPTY_PARAMETER: {
         code: 2000
         ,message: "empty parameters"

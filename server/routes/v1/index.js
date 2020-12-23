@@ -4,6 +4,7 @@ const router = express.Router()
 
 const uploader = require( `${__base}/routes/v1/file/uploader` )
 const viewer = require( `${__base}/routes/v1/file/viewer` )
+const video = require( `${__base}/routes/v1/file/video_file` )
 
 const auth = require( `${__base}/routes/v1/auth` )
 const authCheck = require( `${__base}/routes/v1/auth_check` )
@@ -43,6 +44,8 @@ router.use(authCheck)
 
 // upload router
 router.use('/file', uploader)
+router.use('/video', video);
+
 
 router.use('/user', user)
 router.use('/friend', friend)
