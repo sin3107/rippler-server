@@ -5,8 +5,22 @@ const router = express.Router()
 router.get('/list', async (req, res) => {
 
     let sql
-    let valid = {uid: req.uinfo['u']}
+    let valid = {}
+    let body = req.query
     let result
+
+    const params = [
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'page', value: 'page', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
 
     try {
 
@@ -19,6 +33,7 @@ router.get('/list', async (req, res) => {
                 u.thumbnail,
                 mc.title,
                 mc.contents,
+                m.share,
                 m.count,
                 mc.anonymous,
                 CASE WHEN mc.friend_id = u.id THEN 1 ELSE 0 END AS my_post,
@@ -37,8 +52,10 @@ router.get('/list', async (req, res) => {
                 u.id = m.user_id
             WHERE
                 mc.friend_id = :uid
+            LIMIT
+                :page, :limit
         `
-        result = await _db.qry(sql, valid)
+        result = await _db.qry(sql, valid.params)
 
         if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
@@ -84,6 +101,7 @@ router.get('/item', async (req, res) => {
                 u.thumbnail,
                 mc.title,
                 mc.contents,
+                m.share,
                 m.count,
                 mc.anonymous,
                 CASE WHEN mc.friend_id = u.id THEN 1 ELSE 0 END AS my_post,
@@ -128,14 +146,18 @@ router.post('/insert_feed', async (req, res) => {
     let valid = {}
     let body = req.body
     let result
+    let target_values
+    let child_values
     let values
 
     const params = [
-        {key: 'friend_list', type: 'arr', required: true},
         {key: 'title', type: 'str', required: true},
         {key: 'contents', type: 'str', required: true},
         {key: 'anonymous', type: 'num', required: true},
-        {key: 'media', type: 'arr', optional: true}
+        {key: 'media', type: 'arr', optional: true},
+        {key: 'friend_list', type: 'arr', required: true},
+        {key: 'pool_list', type: 'arr', optional: true},
+        {key: 'share', type: 'num', optional: true}
     ]
 
     try {
@@ -150,7 +172,6 @@ router.post('/insert_feed', async (req, res) => {
 
     try {
         await conn.beginTransaction()
-
         sql = `
             INSERT INTO 
                 mail (
@@ -161,6 +182,19 @@ router.post('/insert_feed', async (req, res) => {
                     :uid, 0
                 )
         `
+        if(valid.params['share']){
+            sql = `
+            INSERT INTO 
+                mail (
+                    user_id, count, share
+                ) 
+            VALUES 
+                (
+                    :uid, 0, :share
+                    
+                )
+        `
+        }
         result = await _db.execQry(conn, sql, valid.params)
 
         valid['params']['mail_id'] = result.insertId
@@ -170,10 +204,9 @@ router.post('/insert_feed', async (req, res) => {
             values = `(:mail_id, '${valid['params']['media'][0]['type']}', ${valid['params']['media'][0]['id']})`
 
             for (let i = 1, e = valid['params']['media'].length; i < e; i++) {
-
                 values += `,(:mail_id, '${valid['params']['media'][i]['type']}', ${valid['params']['media'][i]['id']})`
-
             }
+
             sql = `
                 INSERT INTO 
                     mail_metas(
@@ -186,45 +219,52 @@ router.post('/insert_feed', async (req, res) => {
             await _db.execQry(conn, sql, valid.params)
         }
 
-        values = `(:mail_id, ${valid['params']['friend_list'][0]})`
+        target_values = `(:mail_id, ${valid['params']['friend_list'][0]})`
+
+        child_values = `
+            ( :mail_id, :uid, :title, :contents, :anonymous ), 
+            ( :mail_id, ${valid['params']['friend_list'][0]}, :title, :contents, :anonymous )
+        `
 
         for (let i = 1, e = valid['params']['friend_list'].length; i < e; i++) {
-            values += `,(:mail_id, ${valid['params']['friend_list'][i]})`
+            target_values += `,(:mail_id, ${valid['params']['friend_list'][i]})`
+            child_values += `,(:mail_id, ${valid['params']['friend_list'][i]}, :title, :contents, :anonymous)`
         }
+
         sql = `
             INSERT INTO
                 mail_targets(
                     mail_id, friend_id
                 )
             VALUES
-                ${values}
+                ${target_values}
             `
         await _db.execQry(conn, sql, valid.params)
 
-        values = `
-            (
-                :mail_id,
-                :uid,
-                :title,
-                :contents,
-                0,
-                :anonymous
-            )
-        `
-
-        for (let i = 0, e = valid['params']['friend_list'].length; i < e; i++) {
-
-            values += `,(:mail_id, ${valid['params']['friend_list'][i]}, :title, :contents, 0, :anonymous)`
-
-        }
         sql = `
             INSERT INTO
                 mail_child(
                     mail_id, friend_id, title, contents, anonymous
                 )
             VALUES
+                ${child_values}
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        values = `(:mail_id, ${valid['params']['pool_list'][0]['group_id']}, ${valid['params']['pool_list'][0]['count']})`
+        for (let i = 1, e = valid['params']['pool_list'].length; i < e; i++) {
+            values += `, (:mail_id, ${valid['params']['pool_list'][i]['group_id']}, ${valid['params']['pool_list'][i]['count']})`
+        }
+
+        sql = `
+            INSERT INTO
+                mail_pools(
+                    mail_id, group_id, count
+                )
+            VALUES
                 ${values}
         `
+
         await _db.execQry(conn, sql, valid.params)
 
         await conn.commit()
@@ -251,7 +291,7 @@ router.post('/update_feed', async (req, res) => {
     let result
 
     const params = [
-        {key: 'id', type: 'num', required: true},
+        {key: 'mail_id', type: 'num', required: true},
         {key: 'title', value: 'mc.title', type: 'str', optional: true, update: true},
         {key: 'contents', value: 'mc.contents', type: 'str', optional: true, update: true},
     ]
@@ -298,7 +338,7 @@ router.post('/update_feed', async (req, res) => {
             WHERE
                 w.user_id = :uid
             AND
-                mt.mail_id = :id
+                mt.mail_id = :mail_id
         `
         await _db.execQry(conn, sql, valid.params)
 
@@ -310,11 +350,12 @@ router.post('/update_feed', async (req, res) => {
                     user_id, 
                     friend_id
                 )
-            VALUES (
-                :id, 
-                :uid, 
-                :uid
-            )
+            VALUES 
+                (
+                    :mail_id, 
+                    :uid, 
+                    :uid
+                )
         `
         await _db.execQry(conn, sql, valid.params)
 
@@ -329,7 +370,7 @@ router.post('/update_feed', async (req, res) => {
                 ${valid.update},
                 mc.update_by = current_timestamp()
             WHERE
-                mc.mail_id = :id;
+                mc.mail_id = :mail_id;
         `
         result = await _db.execQry(conn, sql, valid.params)
 
@@ -464,7 +505,7 @@ router.get('/target_list', async (req, res) => {
     let out
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'mail_id', type: 'num', required: true}
     ]
 
     try {
@@ -494,7 +535,7 @@ router.get('/target_list', async (req, res) => {
             ON 
                 p.id = pr.group_id
             WHERE
-                mp.mail_id = :id
+                mp.mail_id = :mail_id
             AND
                 p.user_id = :uid
         `
@@ -525,7 +566,7 @@ router.get('/target_list', async (req, res) => {
             ON
                 bl.user_id = mt.friend_id
             WHERE
-                mt.mail_id = :id
+                mt.mail_id = :mail_id
             AND
                 wl.user_id = :uid
             ORDER BY
@@ -544,7 +585,6 @@ router.get('/target_list', async (req, res) => {
             out = {target: result}
         }
 
-
         _out.print(res, null, [out])
 
     } catch (e) {
@@ -562,7 +602,7 @@ router.post('/target_update', async (req, res) => {
     let values
 
     const params = [
-        {key: 'id', type: 'num', required: true},
+        {key: 'mail_id', type: 'num', required: true},
         {key: 'insert_list', type: 'arr', optional: true},
         {key: 'delete_list', type: 'arr', optional: true},
         {key: 'pool_list', type: 'arr', optional: true}
@@ -589,7 +629,7 @@ router.post('/target_update', async (req, res) => {
                     DELETE FROM
                         mail_targets
                     WHERE
-                        mail_id = :id
+                        mail_id = :mail_id
                     AND
                         friend_id = :fid
                 `
@@ -598,9 +638,10 @@ router.post('/target_update', async (req, res) => {
         }
 
         if (valid.params['insert_list']) {
-            values = `(:id, ${valid.params['insert_list'][0]})`
+            values = `(:mail_id, ${valid.params['insert_list'][0]})`
+
             for (let i = 1, e = valid.params['insert_list'].length; i < e; i++) {
-                values += `, (:id, ${valid.params['insert_list'][i]})`
+                values += `, (:mail_id, ${valid.params['insert_list'][i]})`
             }
 
             sql = `
@@ -612,6 +653,29 @@ router.post('/target_update', async (req, res) => {
                     ${values}
             `
             await _db.execQry(conn, sql, valid.params)
+
+            for (let i = 0, e = valid.params['insert_list'].length; i < e; i++) {
+                sql = `
+                    INSERT INTO
+                        mail_child(
+                            mail_id, friend_id, title, contents, anonymous
+                        )
+                    SELECT
+                        :mail_id, ${valid.params['insert_list'][i]}, mc.title, mc.contents, mc.anonymous
+                    FROM 
+                        mail m
+                    INNER JOIN
+                        mail_child mc
+                    ON
+                        m.id = mc.mail_id
+                    AND
+                        m.user_id = mc.friend_id
+                    WHERE
+                        m.id = :mail_id
+                    ON DUPLICATE KEY UPDATE title = mc.title, contents = mc.contents
+                `
+                await _db.execQry(conn, sql, valid.params)
+            }
         }
 
         if (valid.params['pool_list']) {
@@ -620,13 +684,13 @@ router.post('/target_update', async (req, res) => {
                 DELETE FROM
                     mail_pools
                 WHERE
-                    mail_id = :id
+                    mail_id = :mail_id
             `
             await _db.execQry(conn, sql, valid.params)
 
-            values = `(:id, ${valid.params['pool_list'][0]['pool_id']}, ${valid.params['pool_list'][0]['count']})`
+            values = `(:mail_id, ${valid.params['pool_list'][0]['pool_id']}, ${valid.params['pool_list'][0]['count']})`
             for (let i = 1, e = valid.params['pool_list'].length; i < e; i++) {
-                values = `, (:id, ${valid.params['pool_list'][i]['pool_id']}, ${valid.params['pool_list'][i]['count']})`
+                values = `, (:mail_id, ${valid.params['pool_list'][i]['pool_id']}, ${valid.params['pool_list'][i]['count']})`
             }
 
             sql = `
@@ -662,7 +726,7 @@ router.post('/like', async (req, res) => {
     let body = req.body
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'mail_id', type: 'num', required: true}
     ]
 
     try {
@@ -686,7 +750,7 @@ router.post('/like', async (req, res) => {
                 )
             VALUES
                 (
-                    :id,
+                    :mail_id,
                     :uid
                 )
         `
@@ -698,12 +762,14 @@ router.post('/like', async (req, res) => {
             SET
                 count = count + 1
             WHERE
-                id = :id
+                id = :mail_id
         `
         await _db.execQry(conn, sql, valid.params)
 
         await conn.commit()
         conn.release()
+
+        _out.print(res, null, [true])
 
     } catch (e) {
 
@@ -723,7 +789,7 @@ router.post('/un_like', async (req, res) => {
     let body = req.body
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'mail_id', type: 'num', required: true}
     ]
 
     try {
@@ -743,7 +809,7 @@ router.post('/un_like', async (req, res) => {
             DELETE FROM
                 mail_relations
             WHERE
-                m_id = :id
+                m_id = :mail_id
             AND
                 user_id = :uid
         `
@@ -755,12 +821,14 @@ router.post('/un_like', async (req, res) => {
             SET
                 count = count - 1
             WHERE
-                id = :id
+                id = :mail_id
         `
         await _db.execQry(conn, sql, valid.params)
 
         await conn.commit()
         conn.release()
+
+        _out.print(res, null, [true])
 
     } catch (e) {
 
@@ -837,6 +905,7 @@ router.get('/comment_list', async (req, res) => {
         }
 
         _out.print(res, null, result)
+
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
@@ -918,7 +987,7 @@ router.post('/insert_comment', async (req, res) => {
         {key: 'mail_id', type: 'num', required: true},
         {key: 'user_id', type: 'num', required: true},
         {key: 'parent', type: 'num', required: true},
-        {key: 'mail_child_id', type: 'num', required: true},
+        {key: 'id', type: 'num', required: true},
         {key: 'contents', type: 'str', required: true}
     ]
 
@@ -1051,7 +1120,7 @@ router.post('/insert_comment', async (req, res) => {
                 VALUES
                     (
                         :mc_id,
-                        :mail_child_id,
+                        :id,
                         :uid,
                         :parent,
                         :contents
@@ -1081,7 +1150,6 @@ router.post('/insert_comment', async (req, res) => {
     }
 
 })
-
 
 
 router.post('/update_comment', async (req, res) => {
@@ -1262,135 +1330,32 @@ router.post('/delete_comment', async (req, res) => {
         return
     }
 
-    const conn = await _db.getConn()
     try {
 
-        await conn.beginTransaction()
-
         sql = `
-            CREATE TEMPORARY TABLE VIEW_FRIEND(
-                mail_id BIGINT(12),
-                user_id BIGINT(12),
-                friend_id BIGINT(12)
-            );
-        `
-        await _db.execQry(conn, sql, null)
-
-        sql = `
-            INSERT INTO 
-                VIEW_FRIEND (
-                    mail_id, 
-                    user_id, 
-                    friend_id
-                )
-            SELECT 
-                B.mail_id,
-                A.user_id,
-                A.friend_id
-            FROM 
-                whitelist A
-            INNER JOIN 
-                mail_targets B 
+            DELETE 
+                mc, mcc
+            FROM
+                mail_comments mc
+            INNER JOIN
+                mail_comments_child mcc 
             ON
-                A.friend_id = B.friend_id
-            WHERE 
-                A.user_id = :user_id
+                mc.id = mcc.mail_com_id
+            WHERE
+                mc.id = :mail_com_id
             AND
-                B.mail_id = :mail_id;
+                mcc.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid.params)
+        result = await _db.qry(sql, valid.params)
 
-        sql = `
-            INSERT INTO 
-                VIEW_FRIEND (
-                    mail_id, 
-                    user_id, 
-                    friend_id
-                )
-            VALUES 
-                (
-                    :mail_id, 
-                    :user_id, 
-                    :user_id    
-                )
-            `
-        await _db.execQry(conn, sql, valid.params)
-
-        sql = `
-            INSERT INTO 
-                mail_comments (
-                    mail_id
-                ) 
-            VALUES 
-                (
-                    :mail_id
-                )
-        `
-        result = await _db.execQry(conn, sql, valid.params)
-
-        valid.params['mc_id'] = result.insertId
-
-        sql = `
-            SELECT 
-                COUNT(*) as cnt
-            FROM 
-                VIEW_FRIEND 
-            WHERE 
-                friend_id = :uid > 0
-        `
-        result = await _db.execQry(conn, sql, valid.params)
-
-        if (result[0]['cnt'] > 0) {
-
-            sql = `
-                UPDATE
-                    mail_comments_child
-                SET
-                    contents = :contents,
-                    update_by = current_timestamp()
-                WHERE
-                    user_id = :uid
-                AND
-                    mail_com_id = :mail_com_id
-            `
-
-            await _db.execQry(conn, sql, valid.params)
-
-        } else {
-
-            sql = `
-                UPDATE
-                    mail_comments_child
-                SET
-                    contents = :contents,
-                    update_by = current_timestamp()
-                WHERE
-                    user_id = :uid
-                AND
-                    mail_com_id = :mail_com_id
-                AND
-                    mail_child_id = :mail_child_id
-            `
-
-            await _db.execQry(conn, sql, valid.params)
+        if(result.affectedRows < 1) {
+            _out.print(res, _CONSTANT.ERROR_500, null)
+            return
         }
-
-        sql = `
-            DROP TABLE
-                view_friend;
-        `
-        await _db.execQry(conn, sql, null)
-
-        await conn.commit()
-        conn.release()
 
         _out.print(res, null, [true])
 
     } catch (e) {
-
-        await conn.rollback()
-        conn.release()
-
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
