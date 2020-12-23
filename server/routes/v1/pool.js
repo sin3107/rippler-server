@@ -137,8 +137,8 @@ router.get('/single_list', async (req, res) => {
             SELECT
                 u.id,
                 u.name as friend_name,
-                u.thumbnail,
-                u.status_msg
+                CASE WHEN bl.user_id IS NULL THEN u.thumbnail ELSE bl.thumbnail END AS thumbnail,
+                CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg
             FROM
                 pool_relations pr
             INNER JOIN
@@ -149,6 +149,10 @@ router.get('/single_list', async (req, res) => {
                 whitelist wl
             ON
                 wl.friend_id = pr.friend_id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = wl.friend_id
             WHERE
                 group_id = :gid
             AND

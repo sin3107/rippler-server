@@ -343,6 +343,120 @@ response
 
 
 
+## phone chk
+
+휴대폰 정보 확인
+
+POST /api/v1/user/phone_chk HTTP  
+HOST: rippler.chaeft.com
+Content-Type: application/json;charset=utf-8  
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|device_model|String| 휴대폰 모델 |o|
+|num|String| 전화번호 |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 휴대폰 정보 확인
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/phone_chk' \
+-H 'Content-Type: application/json;charset=utf-8' 'token': token \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [true]
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
+
+## phone update
+
+휴대폰 정보 수정
+
+POST /api/v1/user/phone_update HTTP  
+HOST: rippler.chaeft.com
+Content-Type: application/json;charset=utf-8  
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|device_id|String| 휴대폰 id SSAID & UDID |x|
+|device_token|String| 휴대폰 토큰 |x|
+|device_platform|String| 휴대폰 OS 종류 |x|
+|device_brand|String| 휴대폰 브랜드 |x|
+|device_model|String| 휴대폰 모델 |x|
+|device_version|String| 휴대폰 버전 |x|
+|num|String| 전화번호 |x|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 휴대폰 정보 수정
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/phone_update' \
+-H 'Content-Type: application/json;charset=utf-8' 'token': token \
+-d `{
+    num : "01011112222"
+}
+`
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [true]
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
 
 ## secession
 

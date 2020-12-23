@@ -346,9 +346,108 @@ router.post('/sms_auth_res', async (req, res) => {
 })
 
 
+
 router.post('/phone_chk', async (req, res) => {
 
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'device_model', type: 'str', required: true},
+        {key: 'num', type: 'str', required: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                users            
+            WHERE
+                id = :uid
+            AND
+                device_model = :device_model
+            AND
+                num = :num
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result[0]['cnt'] < 1){
+            _out.print(res, null, [false])
+            return
+        }
+
+        _out.print(res, null, [true])
+
+    }catch (e) {
+       _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
 })
+
+
+
+router.post('/phone_update', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'device_id', value: 'device_id', type: 'str', optional: true, update: true},
+        {key: 'device_token', value: 'device_token', type: 'str', optional: true, update: true},
+        {key: 'device_platform', value: 'device_platform', type: 'str', optional: true, update: true},
+        {key: 'device_brand', value: 'device_brand', type: 'str', optional: true, update: true},
+        {key: 'device_model', value: 'device_model', type: 'str', optional: true, update: true},
+        {key: 'device_version', value: 'device_version', type: 'str', optional: true, update: true},
+        {key: 'num', value: 'num', type: 'str', optional: true, update: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            UPDATE
+                users
+            SET
+                ${valid.update}
+            WHERE
+                id = :uid
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.changedRows < 1){
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
+            return
+        }
+
+        _out.print(res, null, [true])
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
 
 
 router.post('/secession', async (req, res) => {
