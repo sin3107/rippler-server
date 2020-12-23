@@ -49,13 +49,13 @@ router.post('/upload/video', (req, res) => {
     }
 })
 
-router.get('/video/:uuid', async(req, res) => {
+router.get('/video/:id', async(req, res) => {
 
     let out = {}
     let sql
     let sql_params
     let result
-    let uuid = req.params.uuid
+    let id = req.params.id
 
     // 유효성 체크.
     /*if (uuid == null || _util.isBlank(uuid)) {
@@ -72,9 +72,9 @@ router.get('/video/:uuid', async(req, res) => {
         FROM 
             file
         WHERE 
-            uuid = :uuid
+            id = :id
     `
-    sql_params = {uuid: uuid}
+    sql_params = {id: id}
 
     result = await _db.qry(sql, sql_params)
 
