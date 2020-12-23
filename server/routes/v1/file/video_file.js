@@ -1,17 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const util = require('util')
-
-
-// 영상 길이 추출 위해 사용 일단 짐 사용안하니 생략.
-/*const fs = require('fs-extra')
-const ffmpeg = require('fluent-ffmpeg');
-const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
-
-ffmpeg.setFfprobePath(ffprobeInstaller.path);
-*/
-
-// multer 설정.
 const multer = require("multer");
 const {
     videoUpload :videoUpload, filesUpload : filesUpload, imgUpload : imgUpload
@@ -23,21 +11,19 @@ router.post('/upload/video', (req, res) => {
     try {
         videoUpload(req, res, async err => { // params : images
 
-            // console.log(__upload_dir);
             if (err instanceof multer.MulterError) {
 
-                return res.send({ "success" :false, "message" : err.message + 'aa'})
+                return res.send({ "success" :false, "message" : err.message})
 
             } else if (err) {
-                console.log("err1", err.message);
-                return res.send({ "success" :false, "message" : err.message + 'bb'})
+
+                return res.send({ "success" :false, "message" : err.message})
+
             }
 
             let file = req.file;
             let fileDuration ="";
             let result;
-
-            console.log(file);
 
             // TODO insert file table
             let body = {};
@@ -51,39 +37,17 @@ router.post('/upload/video', (req, res) => {
 
             result = await insertFile(body, 1)
 
-            if (result < 1) {
-                return res.send({ "success" :false, "message" : "sql err"})
+            if (result.length < 1) {
+                _out.print(res, _CONSTANT.EMPTY_DATA, null)
+                return
             }
 
-            return res.send({ "success" :true, data : {"fid": result}})
-
-            // 영상 길이 추출 안하므로 생략.
-            /*ffmpeg.ffprobe(file.path ,async (err, metadata) => {
-
-                if (err) {
-                    console.error(err)
-                    return res.send(jresp.uploadError());
-                }
-
-                console.dir(metadata);
-                console.log(metadata.format.duration);
-
-                body.duration = parseInt(metadata.format.duration);
-                body.path = file.destination.replaceAll(__upload_video_dir, "") + "/" + file.filename;
-
-                result = await insertFile(body, 1)
-
-                if (result < 1) {
-                    return res.send(jresp.sqlError());
-                }
-
-                return res.send(jresp.successData({"fid": result}))
-            });*/
+            _out.print(res, null, [result])
 
         })
 
-    } catch (err) {
-        return res.send({ "success" :false, "message" : "err"})
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 })
 
@@ -180,28 +144,25 @@ async function insertFile(body, _type) {
 
     sql = `
         INSERT INTO 
-            files (
+            file(
                 name, 
                 uuid, 
-                file_type, 
-                mime_type, 
-                size, 
-                path
+                size,
+                path,
+                mime_type
             )
         VALUES
             (
                 :name, 
                 :uuid, 
-                :type, 
-                :mime_type, 
                 :size, 
-                :path
+                :path, 
+                :mime_type
             )
     `
     sqlParams = {
         name: body['name']
         , uuid: body['uuid']
-        , type: _type ? _type : 0
         , size: body['size']
         , path: body['path']
         , mime_type: body['mime_type']
@@ -209,11 +170,11 @@ async function insertFile(body, _type) {
 
     result = await _db.qry(sql, sqlParams);
 
-    if (result['insertId'] < 1) {
+    if (result.insertId < 1) {
         return 0;
     }
 
-    return result['insertId'];
+    return result.insertId;
 }
 
 
