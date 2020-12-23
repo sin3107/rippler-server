@@ -117,3 +117,119 @@ response
     }
 }
 ```
+
+
+
+## Main
+ 
+프로필 게시물 목록 호출
+
+GET /api/v1/mail_profile/main HTTP  
+HOST: rippler.chaeft.com    
+token : token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 프로필 게시물 목록 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail_profile/main' \
+-H 'token: token' \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "mail_id": 43,
+                "mail_child_id": 47,
+                "file": "[{\"name\": \"image\", \"value\": 30},{\"name\": \"image\", \"value\": 31}]",
+                "target_cnt": 2,
+                "pool_cnt": 1
+            }
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+
+## Share_feed
+ 
+프로필 공유 게시물 목록 호출
+
+GET /api/v1/mail_profile/share_feed HTTP  
+HOST: rippler.chaeft.com    
+token : token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 프로필 공유 게시물 목록 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail_profile/share_feed' \
+-H 'token: token' \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "mail_id": 43,
+                "mail_child_id": 47,
+                "file": "[{\"name\": \"image\", \"value\": 30},{\"name\": \"image\", \"value\": 31}]",
+                "target_cnt": 2,
+                "pool_cnt": 1
+            }
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```

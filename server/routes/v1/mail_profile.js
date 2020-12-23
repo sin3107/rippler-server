@@ -81,61 +81,52 @@ router.post('/edit', async (req, res) => {
 
 
 
-
 router.get('/main', async (req, res) => {
 
     let sql
-    let valid = {}
-    let body = req.query
+    let valid = {uid: req.uinfo['u']}
     let result
-
-    const params = [
-
-    ]
+    
 
     try{
-        valid['params']['uid'] = req.uinfo['u']
-    }catch (e) {
-        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
-        return
-    }
-
-    try{
-
         sql = `
-            SELECT
-                i.id, 
+            SELECT 
+                A.id AS mail_id,
+                B.id AS mail_child_id,
                 (
-                    SELECT
-                        SUM(ik.count) as sum
-                    FROM
-                        interest_keywords ik
-                    WHERE
-                        ik.post_id = i.id
-                ) as sum ,
-                (
-                    SELECT
-                        value
-                    FROM
-                        interest_metas im
-                    WHERE
-                        im.post_id = i.id
-                    LIMIT
-                        1
-                ) as media
-            FROM
-                interest i
-            INNER JOIN
-                user_profiles up
-            ON
-                i.profile_id = up.id
-            WHERE
-                i.profile_id = :profile_id
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'name', name, 
+                                    'value', value
+                                )
+                            )
+                        ,']') 
+                    FROM 
+                        mail_metas 
+                    WHERE 
+                        mail_id = A.id
+                ) AS file,
+                (SELECT COUNT(*) FROM mail_targets WHERE mail_id = A.id) AS target_cnt,
+                (SELECT COUNT(*) FROM mail_pools WHERE mail_id = A.id) AS pool_cnt
+            FROM 
+                mail A
+            INNER JOIN 
+                mail_child B 
+            ON 
+                A.id = B.mail_id
             AND
-                up.user_id = :uid
+                A.user_id = B.friend_id
+            WHERE 
+                A.user_id = :uid
+            AND 
+                A.share IS NULL
+            ORDER BY
+                A.create_by DESC
         `
 
-        result = await _db.qry(sql, valid.params)
+        result = await _db.qry(sql, valid)
 
         if(result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
@@ -150,6 +141,67 @@ router.get('/main', async (req, res) => {
 
 })
 
+
+
+
+router.get('/share_feed', async (req, res) => {
+
+    let sql
+    let valid = {uid: req.uinfo['u']}
+    let result
+
+
+    try{
+        sql = `
+            SELECT 
+                A.id AS mail_id,
+                B.id AS mail_child_id,
+                A.share AS interest_id,
+                (
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'name', name, 
+                                    'value', value
+                                )
+                            )
+                        ,']') 
+                    FROM 
+                        interest_metas 
+                    WHERE 
+                        post_id = A.share
+                ) AS file,
+                (SELECT COUNT(*) FROM mail_targets WHERE mail_id = A.id) AS target_cnt,
+                (SELECT COUNT(*) FROM mail_pools WHERE mail_id = A.id) AS pool_cnt
+            FROM 
+                mail A
+            LEFT JOIN 
+                mail_child B 
+            ON 
+                A.id = B.mail_id
+            AND
+                A.user_id = B.friend_id
+            WHERE 
+                A.user_id = :uid 
+            AND 
+                A.share IS NOT NULL
+        `
+
+        result = await _db.qry(sql, valid)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
 
 
 module.exports = router

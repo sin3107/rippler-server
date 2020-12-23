@@ -34,8 +34,6 @@ const imgFilter = (req, file, cb) => { //파일의 허용 범위 체크
     } catch (err) {
     }
 
-    console.log("ext : ", ext);
-
     if (ext !== 'png' && ext !== 'jpg' && ext !== 'jpeg') {
         cb(new Error('Only images are allowed'))
     }
@@ -56,9 +54,6 @@ let videoStorage = multer.diskStorage({
 
     filename: function (req, file, cb) {
 
-        console.log(file);
-        console.log(uuidv4())
-
         cb(null, uuidv4().replace(/-/g,"") + ".mp4");
     }
 });
@@ -72,8 +67,6 @@ const videoFilter = (req, file, cb) => {
         ext = file.mimetype.split("/")[1].toLowerCase();
     } catch (err) {
     }
-
-    console.log( "ext" , ext);
 
     if (ext !== 'mp4' && ext !== 'mov' && ext !== 'quicktime') {
         cb(new Error('Only h264 codec is allowed'))
@@ -114,8 +107,6 @@ let sampleStorage = multer.diskStorage({
 
     filename: function (req, file, cb) {
 
-        console.log(file);
-        // cb(null, uuidv4() + ".mp4")
         cb(null, uuidv4().replace(/-/g,"") + ".mp4");
     }
 });
