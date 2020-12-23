@@ -199,6 +199,7 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/mail/insert_feed' \
     "title": "이런 게시물",
     "contents": "ㄱㅔㅅㅣㅁㅜㄹ",
     "anonymous": 0,
+    "share": 145,
     "media": [
         {"type": "image", "id": 30},
         {"type": "image", "id": 31}

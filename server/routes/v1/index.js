@@ -24,6 +24,8 @@ const report = require( `${__base}/routes/v1/report` )
 
 const notice = require( `${__base}/routes/v1/notice` )
 const notification = require( `${__base}/routes/v1/notification` )
+const question = require( `${__base}/routes/v1/question` )
+
 
 router.get('/', async(req, res) => {
     var out = {success: true, message: 'hello api'}
@@ -57,5 +59,6 @@ router.use('/mail', mail)
 router.use('/report', report)
 router.use('/notice', notice)
 router.use('/notification', notification)
+router.use('/question', question)
 
 module.exports = router
