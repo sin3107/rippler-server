@@ -26,11 +26,11 @@ router.post('/upload/video', (req, res) => {
             // console.log(__upload_dir);
             if (err instanceof multer.MulterError) {
 
-                return res.send({ "success" :false, "message" : err.message})
+                return res.send({ "success" :false, "message" : err.message + 'aa'})
 
             } else if (err) {
                 console.log("err1", err.message);
-                return res.send({ "success" :false, "message" : err.message})
+                return res.send({ "success" :false, "message" : err.message + 'bb'})
             }
 
             let file = req.file;
