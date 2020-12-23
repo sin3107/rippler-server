@@ -5,20 +5,18 @@ const {
     videoUpload :videoUpload, filesUpload : filesUpload, imgUpload : imgUpload
 } = require("../../../commons/upload");
 
-// 비디오 업로드  api
+
 router.post('/upload/video', (req, res) => {
 
     try {
-        videoUpload(req, res, async err => { // params : images
+        videoUpload(req, res, async e => { // params : images
 
-            if (err instanceof multer.MulterError) {
-
-                return res.send({ "success" :false, "message" : err.message})
-
-            } else if (err) {
-
-                return res.send({ "success" :false, "message" : err.message})
-
+            if (e instanceof multer.MulterError) {
+                _out.err(res, e.message, e.toString(), null)
+                return
+            } else if (e) {
+                _out.err(res, e.message, e.toString(), null)
+                return
             }
 
             let file = req.file;
@@ -55,7 +53,7 @@ router.get('/video/:uuid', async(req, res) => {
 
     let out = {}
     let sql
-    let sqlP
+    let sql_params
     let result
     let uuid = req.params.uuid
 
@@ -65,27 +63,26 @@ router.get('/video/:uuid', async(req, res) => {
         return res.json(jresp.invalidData());
     }*/
 
-    sql = "SELECT `path`, mime_type, `size`, name " +
-        "FROM files " +
-        "WHERE uuid = :uuid " +
-        "AND file_type = 1"
-    sqlP = {uuid: uuid}
+    sql = `
+        SELECT 
+            path, 
+            mime_type, 
+            size, 
+            name
+        FROM 
+            file
+        WHERE 
+            uuid = :uuid
+    `
+    sql_params = {uuid: uuid}
 
-    result = await _db.qry(sql, sqlP)
+    result = await _db.qry(sql, sql_params)
 
-    if (!result['success']) {
-
-        // return res.json(jresp.sqlError());
+    if(result.length < 1) {
+        _out.print(res, _CONSTANT.EMPTY_DATA, null)
+        return
     }
 
-    if (result['rows'].length < 1) {
-
-        // return res.json(jresp.emptyData());
-    }
-    
-    // res.sendredirect(result['rows'][0]["path"]);
-    console.log(result['rows'][0]["path"]);
-	
 	// 성공시 리다이텍 함.
     res.redirect("https://rippler.chaeft.com" + result['rows'][0]["path"]);
 });
