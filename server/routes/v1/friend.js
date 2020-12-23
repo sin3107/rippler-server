@@ -25,7 +25,13 @@ router.get('/list', async (req, res) => {
                 u.id, 
                 u.name as friend_name, 
                 CASE WHEN wl.name IS NULL THEN u.name ELSE wl.name END AS nickname,
-                CASE WHEN bl.user_id IS NULL THEN u.thumbnail ELSE bl.thumbnail END AS thumbnail,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0 
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
                 CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
                 wl.favorite
             FROM
@@ -60,7 +66,13 @@ router.get('/list', async (req, res) => {
                 u.id, 
                 u.name as friend_name, 
                 wl.name as nickname, 
-                u.thumbnail, 
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0 
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
                 u.status_msg,
                 wl.favorite
             FROM
@@ -69,6 +81,10 @@ router.get('/list', async (req, res) => {
                 users u
             ON
                 wl.friend_id = u.id
+            INNER JOIN
+                blacklist bl
+            ON
+                u.id = bl.user_id
             WHERE
                 wl.user_id = :uid
             AND
@@ -118,8 +134,14 @@ router.get('/item', async (req, res) => {
                 u.id,
                 u.name as friend_name,
                 wl.name as set_nickname,
-                u.thumbnail,
-                u.status_msg,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0 
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
+                CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END as status_msg,
                 wl.favorite
             FROM
                 whitelist wl
@@ -127,6 +149,10 @@ router.get('/item', async (req, res) => {
                 users u
             ON
                 wl.friend_id = u.id
+            INNER JOIN
+                blacklist bl
+            ON
+                u.id = bl.user_id
             WHERE
                 wl.user_id = :uid
             ${valid.where}
@@ -170,6 +196,26 @@ router.post('/sync', async (req, res) => {
 
     try {
 
+        sql = `
+            SELECT
+                auto
+            FROM
+                users
+            WHERE
+                id = :uid
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if (result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        if (result[0]['auto'] < 1) {
+            _out.print(res, null, [true])
+            return
+        }
+
         values = `(:uid, '${valid['params']['content_list'][0]['name']}','${valid['params']['content_list'][0]['num']}')`
 
         for (let i = 1, e = valid['params']['content_list'].length; i < e; i++) {
@@ -184,7 +230,7 @@ router.post('/sync', async (req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        if(result.affectedRows < 1) {
+        if (result.affectedRows < 1) {
             _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
             return
         }
@@ -198,13 +244,16 @@ router.post('/sync', async (req, res) => {
 
 })
 
+
+
 router.post('/add', async (req, res) => {
 
     let sql
     let valid = {}
     let result
     let values
-
+    let blind
+    let media
 
     try {
         valid['uid'] = req.uinfo['u']
@@ -214,6 +263,24 @@ router.post('/add', async (req, res) => {
     }
 
     try {
+
+        sql = `
+            SELECT
+                blind
+            FROM
+                users
+            WHERE
+                id = :uid
+        `
+        result = await _db.qry(sql, valid)
+
+        if (result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        blind = result[0]['blind']
+
         sql = `
             SELECT
                 id
@@ -272,39 +339,134 @@ router.post('/add', async (req, res) => {
         return
     }
 
-    try {
+    if (blind < 1) {
+        try {
 
-        values = `( :uid, ${result[0]['id']})`
+            values = `( :uid, ${result[0]['id']})`
 
-        for (let i = 1, e = result.length; i < e; i++) {
+            for (let i = 1, e = result.length; i < e; i++) {
 
-            values += `, ( :uid, ${result[i]['id']})`
+                values += `, ( :uid, ${result[i]['id']})`
 
+            }
+
+            sql = `
+                INSERT INTO
+                    whitelist(
+                        user_id, friend_id
+                    )
+                VALUES 
+                ${values}
+            `
+
+            result = await _db.qry(sql, valid)
+
+            if (result.affectedRows < 1) {
+                _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
+                return
+            }
+
+            _out.print(res, null, [result.affectedRows])
+
+        } catch (e) {
+            _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
         }
 
-        sql = `
+    } else {
+
+        try {
+
+            sql = `
+                SELECT
+                    thumbnail, status_msg
+                FROM
+                    users
+                WHERE
+                    id = :uid
+            `
+            media = await _db.qry(sql, valid)
+
+            valid['thumbnail'] = media[0]['thumbnail']
+            valid['status_msg'] = media[0]['status_msg']
+
+            values = `(:uid, ${result[0]['id']}, :thumbnail, :status_msg)`
+
+            for (let i = 1, e = result.length; i < e; i++) {
+                values += `, (:uid, ${result[i]['id']}, :thumbnail, :status_msg)`
+            }
+
+            sql = `
             INSERT INTO
-                whitelist(
-                    user_id, friend_id
+                blacklist(
+                    user_id, friend_id, thumbnail, status_msg
                 )
             VALUES 
             ${values}
             `
 
-        result = await _db.qry(sql, valid)
+            result = await _db.qry(sql, valid)
 
-        if(result.affectedRows < 1) {
-            _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
+            if (result.affectedRows < 1) {
+                _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
+                return
+            }
+
+            _out.print(res, null, [result.affectedRows])
+
+        } catch (e) {
+            _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+        }
+    }
+})
+
+
+
+router.post('/settings', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'blind', type: 'num', optional: true},
+        {key: 'auto', type: 'num', optional: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        sql = `
+            UPDATE
+                users
+            SET
+                ${valid.update}
+            WHERE
+                id = :uid
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.changedRows < 1){
+            _out.print(res, _CONSTANT.NOT_CHANGED, null)
             return
         }
 
-        _out.print(res, null, [result.affectedRows])
+        _out.print(res, null, [true])
 
-    } catch (e) {
+    }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
+
 })
+
 
 
 router.post('/nickname_edit', async (req, res) => {

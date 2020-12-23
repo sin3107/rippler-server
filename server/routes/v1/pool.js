@@ -137,7 +137,13 @@ router.get('/single_list', async (req, res) => {
             SELECT
                 u.id,
                 u.name as friend_name,
-                CASE WHEN bl.user_id IS NULL THEN u.thumbnail ELSE bl.thumbnail END AS thumbnail,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = wl.friend_id AND friend_id = :uid) = 0 
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
                 CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg
             FROM
                 pool_relations pr

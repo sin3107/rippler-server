@@ -30,7 +30,13 @@ router.get('/list', async (req, res) => {
                 mc.mail_id,
                 m.user_id,
                 u.name,
-                u.thumbnail,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = m.user_id AND friend_id = :uid) = 0 
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
                 mc.title,
                 mc.contents,
                 m.share,
@@ -50,6 +56,10 @@ router.get('/list', async (req, res) => {
                 users u
             ON
                 u.id = m.user_id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = u.id
             WHERE
                 mc.friend_id = :uid
             LIMIT
@@ -98,7 +108,13 @@ router.get('/item', async (req, res) => {
                 mc.mail_id,
                 m.user_id,
                 u.name,
-                u.thumbnail,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = m.user_id AND friend_id = :uid) = 0 
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
                 mc.title,
                 mc.contents,
                 m.share,
@@ -118,6 +134,10 @@ router.get('/item', async (req, res) => {
                 users u
             ON
                 u.id = m.user_id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = u.id
             WHERE
                 mc.friend_id = :uid
             AND
@@ -550,7 +570,13 @@ router.get('/target_list', async (req, res) => {
             SELECT
                 mt.friend_id, 
                 CASE WHEN wl.name IS NULL THEN u.name ELSE wl.name END AS name,
-                CASE WHEN bl.user_id IS NULL THEN u.thumbnail ELSE bl.thumbnail END AS thumbnail
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = wl.friend_id AND friend_id = :uid) = 0 
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail
             FROM
                 mail_targets mt
             INNER JOIN
@@ -870,8 +896,14 @@ router.get('/comment_list', async (req, res) => {
                 mcc.user_id,
                 mcc.create_by,
                 mcc.update_by,
-                u.thumbnail,
                 u.name,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = mcc.user_id AND friend_id = :uid) = 0
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
                 CASE WHEN u.id = :uid THEN 1 ELSE 0 END AS me, 
                 (
                     SELECT 
@@ -889,6 +921,10 @@ router.get('/comment_list', async (req, res) => {
                 users u 
             ON 
                 mcc.user_id = u.id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = mcc.user_id
             WHERE 
                 mcc.mail_child_id = :id 
             AND 
@@ -943,8 +979,14 @@ router.get('/comment_child_list', async (req, res) => {
                 mcc.user_id,
                 mcc.create_by,
                 mcc.update_by,
-                u.thumbnail,
                 u.name,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = mcc.user_id AND friend_id = :uid) = 0
+                        THEN NULL
+                    WHEN bl.user_id IS NULL 
+                        THEN u.thumbnail 
+                    ELSE bl.thumbnail 
+                END AS thumbnail,
                 CASE WHEN u.id = :uid THEN 1 ELSE 0 END AS me
             FROM 
                 mail_comments_child mcc
@@ -952,6 +994,10 @@ router.get('/comment_child_list', async (req, res) => {
                 users u 
             ON 
                 mcc.user_id = u.id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = mcc.user_id
             WHERE 
                 mcc.mail_child_id = :id 
             AND 
