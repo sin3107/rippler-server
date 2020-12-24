@@ -34,11 +34,11 @@ async function main() {
 
     global._CONSTANT = require(`${__base}/commons/constant`)
     _log.i('# init CONSTANT Variables')
-    //global._out = require( `${__base}/commons/out` )()
+
     global._out = require(`${__base}/commons/out`)()
     _log.i('# init printer')
 
-    require(`${__base}/commons/fcm`)()
+    global._fcm = require(`${__base}/commons/fcm`)()
 
     global._db = db(mysql.createPool(
         {

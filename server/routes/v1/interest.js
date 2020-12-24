@@ -1024,7 +1024,11 @@ router.post('/insert_comment', async (req, res) => {
     }
 
 
+    const conn = await _db.getConn()
+
     try {
+        await conn.beginTransaction()
+
         sql = `
             INSERT INTO 
                 interest_comments (
@@ -1036,16 +1040,61 @@ router.post('/insert_comment', async (req, res) => {
                 )
         `
 
-        result = await _db.qry(sql, valid.params)
+        result = await _db.execQry(conn, sql, valid.params)
 
         if (result.insertId < 1) {
             _out.print(res, _CONSTANT.ERROR_500, null)
             return
         }
 
-        _out.print(res, null, [result.insertId])
+        // 알림 영역 시작
+
+        valid.params['comment_id'] = result.insertId
+
+        valid.params['detail_type'] = 8
+        if (valid.params['parent'] < 1) {
+            valid.params['detail_type'] = 7
+        }
+
+        sql = `
+            INSERT INTO
+                messages(
+                    page, 
+                    detail_type, 
+                    user_id, 
+                    friend_id, 
+                    thumbnail, 
+                    post_id, 
+                    comment_id, 
+                    contents
+                )
+            VALUES
+                (
+                    2,
+                    :detail_type,
+                    :profile_id,
+                    (SELECT user_id FROM interest WHERE id = :post_id),
+                    (SELECT value FROM interest_metas WHERE post_id = :post_id AND name = "image" limit 1),
+                    :post_id,
+                    :comment_id,
+                    :contents
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+
+        // 알림 영역 끝
+
+        await conn.commit()
+        conn.release()
+
+        _out.print(res, null, [valid['params']['comment_id']])
 
     } catch (e) {
+
+        await conn.rollback()
+        conn.release()
+
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
@@ -1223,7 +1272,8 @@ router.post('/like_comment', async (req, res) => {
     let result
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'id', type: 'num', required: true},
+        {key: 'profile_id', type: 'num', required: true}
     ]
 
     try {
@@ -1266,6 +1316,36 @@ router.post('/like_comment', async (req, res) => {
             _out.print(res, _CONSTANT.NOT_CHANGED, null)
             return
         }
+
+        // 알림 영역 시작
+
+        sql = `
+            INSERT INTO
+                messages(
+                    page, 
+                    detail_type, 
+                    user_id, 
+                    friend_id, 
+                    thumbnail, 
+                    post_id, 
+                    comment_id
+                )
+            VALUES
+                (
+                    2,
+                    9,
+                    :profile_id,
+                    (SELECT user_id FROM interest_comments WHERE id = :id),
+                    (SELECT im.value FROM interest_comments ic 
+                    INNER JOIN interest_metas im ON ic.post_id = im.post_id WHERE ic.id = :id AND im.name = "image" LIMIT 1),
+                    (SELECT post_id FROM interest_comments WHERE id = :id),
+                    :id
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+
+        // 알림 영역 끝
 
         await conn.commit()
         conn.release()
@@ -1354,7 +1434,8 @@ router.post('/keyword_like', async (req, res) => {
 
     const params = [
         {key: 'id', type: 'num', required: true},
-        {key: 'post_id', type: 'num', required: true}
+        {key: 'post_id', type: 'num', required: true},
+        {key: 'profile_id', type: 'num', required: true}
     ]
 
     try {
@@ -1435,6 +1516,34 @@ router.post('/keyword_like', async (req, res) => {
             _out.print(res, _CONSTANT.NOT_CHANGED, null)
             return
         }
+
+        // 알림 영역 시작
+
+        sql = `
+            INSERT INTO
+                messages(
+                    page, 
+                    detail_type, 
+                    user_id, 
+                    friend_id, 
+                    thumbnail, 
+                    post_id
+                )
+            VALUES
+                (
+                    2,
+                    6,
+                    :profile_id,
+                    (SELECT user_id FROM interest WHERE id = :post_id),
+                    (SELECT value FROM interest_metas WHERE post_id = :post_id AND name = "image" limit 1),
+                    :post_id
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+
+        //알림 영역 끝
+
 
         await conn.commit()
         conn.release()
@@ -1532,6 +1641,7 @@ router.post('/keyword_un_like', async (req, res) => {
             limit 3
         `
         result = await _db.execQry(conn, sql, valid.params)
+
         if (result.changedRows < 1) {
             await conn.rollback()
             conn.release()
@@ -1562,7 +1672,8 @@ router.post('/keyword_add', async (req, res) => {
 
     const params = [
         {key: 'post_id', type: 'num', required: true},
-        {key: 'keyword_list', type: 'arr', required: true}
+        {key: 'keyword_list', type: 'arr', required: true},
+        {key: 'profile_id', type: 'num', required: true}
     ]
 
     try {
@@ -1635,6 +1746,33 @@ router.post('/keyword_add', async (req, res) => {
             await _db.execQry(conn, sql, valid.params)
 
         }
+
+        // 알림 영역 시작
+
+        sql = `
+            INSERT INTO
+                messages(
+                    page, 
+                    detail_type, 
+                    user_id, 
+                    friend_id, 
+                    thumbnail, 
+                    post_id
+                )
+            VALUES
+                (
+                    2,
+                    6,
+                    :profile_id,
+                    (SELECT user_id FROM interest WHERE id = :post_id),
+                    (SELECT value FROM interest_metas WHERE post_id = :post_id AND name = "image" limit 1),
+                    :post_id
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+
+        //알림 영역 끝
 
         await conn.commit()
         conn.release()

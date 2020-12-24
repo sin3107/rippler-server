@@ -46,7 +46,7 @@ fcm.prototype.sendArr = function(tokens, data) {
 
 fcm.prototype.send = function(token, data) {
     return new Promise( async(resolve, reject) => {
-        if ((tokens instanceof Array) === false || tokens.length < 1) {
+        if ((token instanceof Array) === false || token.length < 1) {
             reject()
         }
     
