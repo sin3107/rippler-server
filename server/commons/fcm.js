@@ -13,14 +13,14 @@ function fcm() {
 
 fcm.prototype.init = function() {
     try {
-        global._fcm = require("firebase-admin")
-        const serviceAccount = require(process.env.FCM_ADMIN_SDK_PATH)
+        this.fcmAdmin = require("firebase-admin")
+        const serviceAccount = require(process.env.FCM_ADMIN_SDK_PATH);
         _log.i('# load fcm admin success')
 
-        _fcm.initializeApp({
-            credential: _fcm.credential.cert(serviceAccount),
-            databaseURL: process.env.FCM_FIREBASE_URL
-        })
+        this.fcmAdmin.initializeApp({
+            credential: this.fcmAdmin.credential.cert(serviceAccount)
+            //databaseURL: process.env.FCM_FIREBASE_URL
+        });
         _log.i('# initialize firebase admin')
 
     } catch (e) {
@@ -33,30 +33,44 @@ fcm.prototype.sendArr = function(tokens, data) {
         if ((tokens instanceof Array) === false || tokens.length < 1) {
             reject()
         }
-    
+
         const msg = {
             data: data,
             tokens: tokens,
         }
-    
-        const response = await _fcm.messaging().sendMulticast(msg)
-        resolve(response)
+
+        try {
+            const response = await this.fcmAdmin.messaging().sendMulticast(msg)
+            resolve(response)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 
 fcm.prototype.send = function(token, data) {
     return new Promise( async(resolve, reject) => {
-        if ((token instanceof Array) === false || token.length < 1) {
+        if (typeof token !== 'string' || token.length < 1) {
             reject()
         }
-    
+
         const msg = {
-            data: data,
+            notification: data,
+            data: {
+                score: '850',
+                time: '2:45'
+            },
             token: token,
         }
-    
-        const response = await _fcm.messaging().sendMulticast(msg)
-        resolve(response)
+
+        try {
+            const response = await this.fcmAdmin.messaging().send(msg)
+            resolve(response)
+        } catch (e) {
+            console.log(e)
+            reject(e)
+        }
+
     })
 }
 

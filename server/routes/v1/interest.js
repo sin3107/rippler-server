@@ -1059,7 +1059,7 @@ router.post('/insert_comment', async (req, res) => {
         sql = `
             INSERT INTO
                 messages(
-                    page, 
+                    pages, 
                     detail_type, 
                     user_id, 
                     friend_id, 
@@ -1322,7 +1322,7 @@ router.post('/like_comment', async (req, res) => {
         sql = `
             INSERT INTO
                 messages(
-                    page, 
+                    pages, 
                     detail_type, 
                     user_id, 
                     friend_id, 
@@ -1522,7 +1522,7 @@ router.post('/keyword_like', async (req, res) => {
         sql = `
             INSERT INTO
                 messages(
-                    page, 
+                    pages, 
                     detail_type, 
                     user_id, 
                     friend_id, 
@@ -1752,7 +1752,7 @@ router.post('/keyword_add', async (req, res) => {
         sql = `
             INSERT INTO
                 messages(
-                    page, 
+                    pages, 
                     detail_type, 
                     user_id, 
                     friend_id, 
@@ -1771,6 +1771,28 @@ router.post('/keyword_add', async (req, res) => {
         `
         await _db.execQry(conn, sql, valid.params)
 
+        sql = `
+            SELECT 
+                u.device_token as fcm_token
+            FROM 
+                interest i
+            INNER JOIN
+                users u
+            ON
+                i.user_id = u.id
+            WHERE 
+                i.id = :post_id
+        `
+        result = await _db.execQry(conn, sql, valid.params)
+
+        if(result[0]['fcm_token']){
+            const push_data = {
+                title: "rippler",
+                body: "내 게시글에 사람들이 관심을 표현했습니다."
+            }
+
+            _fcm.send(result[0]['fcm_token'], push_data)
+        }
 
         //알림 영역 끝
 
@@ -1782,6 +1804,41 @@ router.post('/keyword_add', async (req, res) => {
     } catch (e) {
         await conn.rollback()
         conn.release()
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/ttttt', async(req, res) => {
+
+    try{
+        let sql = `
+            SELECT 
+                u.device_token as fcm_token
+            FROM 
+                interest i
+            INNER JOIN
+                users u
+            ON
+                i.user_id = u.id
+            WHERE 
+                i.id = 1
+        `
+        let result = await _db.qry(sql, null)
+
+        console.log(result[0]['fcm_token'])
+
+        if(result[0]['fcm_token']){
+            console.log('a')
+        }
+
+        if(!result[0]['fcm_token']){
+            console.log('aa')
+        }
+
+        _out.print(res, null, [result])
+    }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 

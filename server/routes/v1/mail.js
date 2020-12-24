@@ -1023,7 +1023,6 @@ router.get('/comment_child_list', async (req, res) => {
 
 router.post('/insert_comment', async (req, res) => {
 
-
     let sql
     let valid = {}
     let body = req.body
