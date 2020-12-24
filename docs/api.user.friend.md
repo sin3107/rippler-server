@@ -436,3 +436,62 @@ response
     }
 }
 ```
+
+
+
+## settings
+
+동기화 설정
+
+POST /api/v1/friend/settings HTTP  
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|blind|Int|동기화시 블라인드 여부 default: 0(x), 1(o)|x|
+|auto|Int|자동 동기화 default: 1(o), 0(x)|x|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 동기화 설정
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/friend/settings' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "blind":1,
+    "auto": 1
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```

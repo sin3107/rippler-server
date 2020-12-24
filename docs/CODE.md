@@ -12,6 +12,7 @@
 | 2003 | not authorized | 권한없음 |
 | 2004 | the name exists | 풀 이름 중첩 |
 | 2005 | exceed count | 투표가능 갯수 초과 |
+| 2006 | authorized failed | 인증 실패 |
 | 3001 | connection failure | 연결 실패 |
 | 3002 | payment failure | 결제 실패 |
 | 4000 | json parse error | Body JSON 형식 오류 |

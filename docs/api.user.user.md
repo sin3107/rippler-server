@@ -396,6 +396,241 @@ response
 
 
 
+## authorized
+
+인증 친구 호출
+
+GET /api/v1/user/authorized HTTP  
+HOST: rippler.chaeft.com
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 인증 친구호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/user/authorized' \
+-H 'token': token \
+`
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"}
+        ]
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
+
+## check
+
+친구 확인
+
+POST /api/v1/user/check HTTP  
+HOST: rippler.chaeft.com
+Content-Type: application/json;charset=utf-8  
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|id|Int| 친구 id |o|
+|name|String| 친구 이름 |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 친구 확인
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/check' \
+-H 'Content-Type: application/json;charset=utf-8' 'token': token \
+-d `{
+    "id" : 3,
+    "name" : "asd
+}
+`
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [true]
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
+
+
+## authorized pool
+
+인증 풀 호출
+
+GET /api/v1/user/authorized_pool HTTP  
+HOST: rippler.chaeft.com
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 인증 풀 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/user/authorized_pool' \
+-H 'token': token \
+`
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"},
+            {id: 1, name: "asd"}
+        ]
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
+
+## check_pool
+
+풀 확인
+
+POST /api/v1/user/check_pool HTTP  
+HOST: rippler.chaeft.com
+Content-Type: application/json;charset=utf-8  
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|id|Int| 풀 id |o|
+|name|String| 풀 이름 |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 풀 확인
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/check_pool' \
+-H 'Content-Type: application/json;charset=utf-8' 'token': token \
+-d `{
+    "id" : 3,
+    "name" : "asd
+}
+`
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [true]
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
+
 ## phone update
 
 휴대폰 정보 수정

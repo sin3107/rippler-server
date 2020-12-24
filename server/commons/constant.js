@@ -39,6 +39,10 @@ module.exports = {
         code: 2005
         ,message: "exceed number"
     }
+    ,AUTHORIZED_FAILED: {
+        code: 2006
+        ,message: "authorized failed"
+    }
     ,JSON_PARSE_ERROR: {
         code: 4000
         ,message: "json parse error"
