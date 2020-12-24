@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const Notify = require( `${__base}/commons/notify` )
 
 
 router.get('/list', async (req, res) => {
@@ -297,8 +298,12 @@ router.post('/insert_feed', async (req, res) => {
             VALUES
                 ${values}
         `
-
         await _db.execQry(conn, sql, valid.params)
+
+
+        const notify = new Notify()
+        notify.notiMailFeed(valid.params['mail_id'], valid.params['friend_list'], valid.params['uid'])
+
 
         await conn.commit()
         conn.release()
@@ -754,6 +759,10 @@ router.post('/target_update', async (req, res) => {
             await _db.execQry(conn, sql, valid.params)
 
         }
+
+        const notify = new Notify()
+        notify.notiMailFeed(valid.params['mail_id'], valid.params['insert_list'], valid.params['uid'])
+
         await conn.commit()
         conn.release()
         _out.print(res, null, [true])
@@ -823,6 +832,13 @@ router.post('/like', async (req, res) => {
         `
         await _db.execQry(conn, sql, valid.params)
 
+        // 알림 영역 시작
+        
+        const notify = new Notify()
+        notify.notiMailLike(valid.params)
+        
+        // 알림 영역 끝
+        
         await conn.commit()
         conn.release()
 
@@ -1228,6 +1244,19 @@ router.post('/insert_comment', async (req, res) => {
 
         await _db.execQry(conn, sql, valid.params)
 
+        // 알림 영역 시작
+        if(result[0]['cnt'] > 0){
+
+            let detail = 5
+            if (valid.params['parent'] < 1) {
+                detail = 4
+            }
+
+            const notify = new Notify()
+            notify.notiMailInsCom(valid.params['mc_id'], detail, valid.params)
+
+        }
+        // 알림 영역 끝
 
         await conn.commit()
         conn.release()

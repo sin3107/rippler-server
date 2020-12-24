@@ -1048,7 +1048,6 @@ router.post('/insert_comment', async (req, res) => {
         }
 
         // 알림 영역 시작
-
         let detail = 8
         if (valid.params['parent'] < 1) {
             detail = 7
@@ -1056,6 +1055,7 @@ router.post('/insert_comment', async (req, res) => {
 
         const notify = new Notify()
         notify.notiInterestInsCom(result.insertId, detail, valid.params)
+
 
 
         // 알림 영역 끝
