@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-
+const Notify = require( `${__base}/commons/notify` )
 
 router.get('/list', async (req, res) => {
 
@@ -1049,38 +1049,13 @@ router.post('/insert_comment', async (req, res) => {
 
         // 알림 영역 시작
 
-        valid.params['comment_id'] = result.insertId
-
-        valid.params['detail_type'] = 8
+        let detail = 8
         if (valid.params['parent'] < 1) {
-            valid.params['detail_type'] = 7
+            detail = 7
         }
 
-        sql = `
-            INSERT INTO
-                messages(
-                    pages, 
-                    detail_type, 
-                    user_id, 
-                    friend_id, 
-                    thumbnail, 
-                    post_id, 
-                    comment_id, 
-                    contents
-                )
-            VALUES
-                (
-                    2,
-                    :detail_type,
-                    :profile_id,
-                    (SELECT user_id FROM interest WHERE id = :post_id),
-                    (SELECT value FROM interest_metas WHERE post_id = :post_id AND name = "image" limit 1),
-                    :post_id,
-                    :comment_id,
-                    :contents
-                )
-        `
-        await _db.execQry(conn, sql, valid.params)
+        const notify = new Notify()
+        notify.notiInterestInsCom(result.insertId, detail, valid.params)
 
 
         // 알림 영역 끝
@@ -1088,7 +1063,7 @@ router.post('/insert_comment', async (req, res) => {
         await conn.commit()
         conn.release()
 
-        _out.print(res, null, [valid['params']['comment_id']])
+        _out.print(res, null, [result.insertId])
 
     } catch (e) {
 
@@ -1317,35 +1292,14 @@ router.post('/like_comment', async (req, res) => {
             return
         }
 
+
         // 알림 영역 시작
 
-        sql = `
-            INSERT INTO
-                messages(
-                    pages, 
-                    detail_type, 
-                    user_id, 
-                    friend_id, 
-                    thumbnail, 
-                    post_id, 
-                    comment_id
-                )
-            VALUES
-                (
-                    2,
-                    9,
-                    :profile_id,
-                    (SELECT user_id FROM interest_comments WHERE id = :id),
-                    (SELECT im.value FROM interest_comments ic 
-                    INNER JOIN interest_metas im ON ic.post_id = im.post_id WHERE ic.id = :id AND im.name = "image" LIMIT 1),
-                    (SELECT post_id FROM interest_comments WHERE id = :id),
-                    :id
-                )
-        `
-        await _db.execQry(conn, sql, valid.params)
+        const notify = new Notify()
+        notify.notiInterestComment(valid.params['id'], valid.params['profile_id'])
 
+        //알림 영역 끝
 
-        // 알림 영역 끝
 
         await conn.commit()
         conn.release()
@@ -1517,30 +1471,11 @@ router.post('/keyword_like', async (req, res) => {
             return
         }
 
+
         // 알림 영역 시작
 
-        sql = `
-            INSERT INTO
-                messages(
-                    pages, 
-                    detail_type, 
-                    user_id, 
-                    friend_id, 
-                    thumbnail, 
-                    post_id
-                )
-            VALUES
-                (
-                    2,
-                    6,
-                    :profile_id,
-                    (SELECT user_id FROM interest WHERE id = :post_id),
-                    (SELECT value FROM interest_metas WHERE post_id = :post_id AND name = "image" limit 1),
-                    :post_id
-                )
-        `
-        await _db.execQry(conn, sql, valid.params)
-
+        const notify = new Notify()
+        notify.notiKeyword(valid.params['post_id'], valid.params['profile_id'])
 
         //알림 영역 끝
 
@@ -1749,50 +1684,8 @@ router.post('/keyword_add', async (req, res) => {
 
         // 알림 영역 시작
 
-        sql = `
-            INSERT INTO
-                messages(
-                    pages, 
-                    detail_type, 
-                    user_id, 
-                    friend_id, 
-                    thumbnail, 
-                    post_id
-                )
-            VALUES
-                (
-                    2,
-                    6,
-                    :profile_id,
-                    (SELECT user_id FROM interest WHERE id = :post_id),
-                    (SELECT value FROM interest_metas WHERE post_id = :post_id AND name = "image" limit 1),
-                    :post_id
-                )
-        `
-        await _db.execQry(conn, sql, valid.params)
-
-        sql = `
-            SELECT 
-                u.device_token as fcm_token
-            FROM 
-                interest i
-            INNER JOIN
-                users u
-            ON
-                i.user_id = u.id
-            WHERE 
-                i.id = :post_id
-        `
-        result = await _db.execQry(conn, sql, valid.params)
-
-        if(result[0]['fcm_token']){
-            const push_data = {
-                title: "rippler",
-                body: "내 게시글에 사람들이 관심을 표현했습니다."
-            }
-
-            _fcm.send(result[0]['fcm_token'], push_data)
-        }
+        const notify = new Notify()
+        notify.notiKeyword(valid.params['post_id'], valid.params['profile_id'])
 
         //알림 영역 끝
 
