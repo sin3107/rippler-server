@@ -168,6 +168,7 @@ router.post('/insert_feed', async (req, res) => {
     let result
     let target_values
     let child_values
+    let user_relation
     let values
 
     const params = [
@@ -245,10 +246,14 @@ router.post('/insert_feed', async (req, res) => {
             ( :mail_id, :uid, :title, :contents, :anonymous ), 
             ( :mail_id, ${valid['params']['friend_list'][0]}, :title, :contents, :anonymous )
         `
+        user_relation = `(:uid, ${valid['params']['friend_list'][0]})`
+
+        await _db.execQry(conn, sql, valid.params)
 
         for (let i = 1, e = valid['params']['friend_list'].length; i < e; i++) {
             target_values += `,(:mail_id, ${valid['params']['friend_list'][i]})`
             child_values += `,(:mail_id, ${valid['params']['friend_list'][i]}, :title, :contents, :anonymous)`
+            user_relation += `,(:uid, ${valid['params']['friend_list'][i]})`
         }
 
         sql = `
@@ -268,6 +273,14 @@ router.post('/insert_feed', async (req, res) => {
                 )
             VALUES
                 ${child_values}
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            INSERT ignore INTO
+                user_relations(user_id, friend_id)
+            VALUES
+                ${user_relation}
         `
         await _db.execQry(conn, sql, valid.params)
 
@@ -626,6 +639,7 @@ router.post('/target_update', async (req, res) => {
     let valid = {}
     let body = req.body
     let values
+    let user_relations
 
     const params = [
         {key: 'mail_id', type: 'num', required: true},
@@ -665,9 +679,11 @@ router.post('/target_update', async (req, res) => {
 
         if (valid.params['insert_list']) {
             values = `(:mail_id, ${valid.params['insert_list'][0]})`
+            user_relations = `(:uid, ${valid.params['insert_list'][0]})`
 
             for (let i = 1, e = valid.params['insert_list'].length; i < e; i++) {
                 values += `, (:mail_id, ${valid.params['insert_list'][i]})`
+                user_relations += `(:uid, ${valid.params['insert_list'][i]})`
             }
 
             sql = `
@@ -677,6 +693,14 @@ router.post('/target_update', async (req, res) => {
                     )
                 VALUES
                     ${values}
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                INSERT ignore INTO
+                    user_relations(user_id, friend_id)
+                VALUES
+                    ${user_relations}
             `
             await _db.execQry(conn, sql, valid.params)
 
@@ -789,6 +813,13 @@ router.post('/like', async (req, res) => {
                 count = count + 1
             WHERE
                 id = :mail_id
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            INSERT ignore INTO
+                user_relations(user_id, friend_id)
+            VALUES(:uid, (SELECT user_id FROM mail WHERE id = :mail_id))
         `
         await _db.execQry(conn, sql, valid.params)
 
@@ -1180,6 +1211,23 @@ router.post('/insert_comment', async (req, res) => {
                 view_friend;
         `
         await _db.execQry(conn, sql, null)
+
+        if(valid.params['parent'] < 1){
+            sql = `
+                INSERT ignore INTO
+                    user_relations(user_id, friend_id)
+                VALUES(:uid, (SELECT user_id FROM mail WHERE id = :mail_id))
+            `
+        }else {
+            sql = `
+                INSERT ignore INTO
+                    user_relations(user_id, friend_id)
+                VALUES(:uid, (SELECT user_id FROM mail_comments_child WHERE id = :parent))
+            `
+        }
+
+        await _db.execQry(conn, sql, valid.params)
+
 
         await conn.commit()
         conn.release()
