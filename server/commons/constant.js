@@ -43,6 +43,10 @@ module.exports = {
         code: 2006
         ,message: "authorized failed"
     }
+    ,BANNED_USER: {
+        code: 2007
+        ,message: "banned user"
+    }
     ,JSON_PARSE_ERROR: {
         code: 4000
         ,message: "json parse error"

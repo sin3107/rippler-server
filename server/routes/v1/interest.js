@@ -1703,41 +1703,6 @@ router.post('/keyword_add', async (req, res) => {
 })
 
 
-router.post('/ttttt', async(req, res) => {
-
-    try{
-        let sql = `
-            SELECT 
-                u.device_token as fcm_token
-            FROM 
-                interest i
-            INNER JOIN
-                users u
-            ON
-                i.user_id = u.id
-            WHERE 
-                i.id = 1
-        `
-        let result = await _db.qry(sql, null)
-
-        console.log(result[0]['fcm_token'])
-
-        if(result[0]['fcm_token']){
-            console.log('a')
-        }
-
-        if(!result[0]['fcm_token']){
-            console.log('aa')
-        }
-
-        _out.print(res, null, [result])
-    }catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-    }
-
-})
-
-
 router.get('/feed_keywords', async (req, res) => {
 
     let sql

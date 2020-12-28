@@ -42,7 +42,8 @@ router.post('/interest_feed', async (req, res) => {
                     :reason, 
                     2, 
                     :content_id
-                )     
+                )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp()
         `
         result = await _db.qry(sql, valid.params)
 
@@ -101,7 +102,8 @@ router.post('/interest_comment', async (req, res) => {
                     :reason, 
                     1, 
                     :content_id
-                )     
+                )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp()
         `
         result = await _db.qry(sql, valid.params)
 
@@ -162,7 +164,8 @@ router.post('/mail_feed', async (req, res) => {
                     :reason, 
                     4, 
                     :content_id
-                )     
+                )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp()
         `
         result = await _db.qry(sql, valid.params)
 
@@ -221,7 +224,8 @@ router.post('/mail_comment', async (req, res) => {
                     :reason, 
                     3, 
                     :content_id
-                )     
+                )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp()
         `
         result = await _db.qry(sql, valid.params)
 

@@ -7,8 +7,8 @@ function notify() {
 
 const notiMsg = function (type, nick) {
     const initMsg = {
-        0: ``,
-        1: ``,
+        0: `커뮤니티 이용 규칙 위반입니다.`,
+        1: `나의 문의사항에 답변완료 되었습니다.`,
         2: `${nick}님이 회원님에게 게시물을 공유하였습니다.`,
         3: `${nick}님이 회원님의 게시물에 좋아요 하였습니다.`,
         4: `${nick}님이 회원님의 게시물에 댓글을 달았습니다.`,
@@ -22,9 +22,70 @@ const notiMsg = function (type, nick) {
     return initMsg[type]
 }
 
+notify.prototype.notiAdminMessage = async function (user_id, num) {
+
+    let sql
+    let sql_params = {user_id : user_id}
+    let result
+
+    try {
+
+        sql = `
+            SELECT
+                device_token as fcm_token 
+            FROM
+                users
+            WHERE
+                id = :user_id
+        `
+        result = await _db.qry(sql, sql_params)
+
+        if (result.length < 1) {
+            return
+        }
+
+        const fcm_token = result[0]['fcm_token']
+
+        if (!fcm_token) {
+            return
+        }
+
+
+        let msg = notiMsg(num, null)
+
+        sql = `
+            INSERT INTO
+                messages(
+                    pages, 
+                    detail_type,
+                    friend_id, 
+                    contents
+                )
+            VALUES
+                (
+                    0,
+                    0,
+                    :user_id,
+                    '${msg}'
+                )
+        `
+        await _db.qry(sql, sql_params)
+
+        const push_data = {
+            title: "rippler",
+            body: msg
+        }
+
+        _fcm.send(fcm_token, push_data)
+
+    } catch (e) {
+        _log.e(e.toString())
+    }
+
+}
+
 
 notify.prototype.notiKeyword = async function (post_id, profile_id) {
-
 
     let sql
     let sql_params = {post_id: post_id, profile_id: profile_id}
