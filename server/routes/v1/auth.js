@@ -146,6 +146,8 @@ router.post('/signup', async (req, res) => {
         await conn.commit()
         conn.release()
 
+        _out.print(res, null, ['true'])
+
     } catch (e) {
         await conn.rollback()
         conn.release()

@@ -119,6 +119,29 @@ notify.prototype.notiKeyword = async function (post_id, profile_id) {
 
         sql = `
             SELECT
+                n.interest_keyword as value
+            FROM
+                interest i
+            INNER JOIN
+                notifications n
+            ON
+                i.user_id = n.user_id
+            WHERE
+                i.id = :post_id
+        `
+        result = await _db.qry(sql, sql_params)
+
+        if(result.length < 1) {
+            return
+        }
+
+        if(result[0]['value'] < 1){
+            return
+        }
+
+
+        sql = `
+            SELECT
                 nickname
             FROM
                 user_profiles
@@ -205,6 +228,30 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
         if (!fcm_token) {
             return
         }
+
+
+        sql = `
+            SELECT
+                n.interest_comment_count as value
+            FROM
+                interest_comments ic
+            INNER JOIN
+                notifications n
+            ON
+                ic.user_id = n.user_id
+            WHERE
+                ic.id = :comment_id
+        `
+        result = await _db.qry(sql, sql_params)
+
+        if(result.length < 1) {
+            return
+        }
+
+        if(result[0]['value'] < 1){
+            return
+        }
+
 
         sql = `
             SELECT
@@ -295,13 +342,13 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
                 SELECT 
                     u.device_token as fcm_token
                 FROM 
-                    interest_comments ic
+                    interest i
                 INNER JOIN
                     users u
                 ON
-                    ic.user_id = u.id
+                    i.user_id = u.id
                 WHERE 
-                    ic.id = :comment_id
+                    i.id = :post_id
             `
         }
 
@@ -316,6 +363,46 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
         if (!fcm_token) {
             return
         }
+
+
+        //대댓글일 때
+        if (detail_type === 8) {
+            sql = `
+                SELECT
+                    n.interest_comment_child as value
+                FROM
+                    interest_comments ic
+                INNER JOIN
+                    notifications n
+                ON
+                    ic.user_id = n.user_id
+                WHERE
+                    ic.id = :parent
+            `
+        } else {
+            sql = `
+                SELECT
+                    n.interest_comment as value
+                FROM
+                    interest i
+                INNER JOIN
+                    notifications n
+                ON
+                    i.user_id = n.user_id
+                WHERE
+                    i.id = :post_id
+            `
+        }
+        result = await _db.qry(sql, sql_params)
+
+        if(result.length < 1) {
+            return
+        }
+
+        if(result[0]['value'] < 1){
+            return
+        }
+
 
         sql = `
             SELECT
@@ -381,7 +468,8 @@ notify.prototype.notiMailInsCom = async function (comment_id, detail_type, param
         comment_id: comment_id, detail_type: detail_type,
         user_id: params.user_id, mail_id: params.mail_id,
         parent: params.parent, contents: params.contents, uid: params.uid
-    }
+    }//여기서 user_id 는 게시글 주인의 user id
+
     let result
 
     try {
@@ -422,6 +510,41 @@ notify.prototype.notiMailInsCom = async function (comment_id, detail_type, param
         if (!fcm_token) {
             return
         }
+
+        //대댓글
+        if (detail_type === 5) {
+            sql = `
+                SELECT 
+                    mail_comment_child as value
+                FROM 
+                    mail_comments_child mcc
+                INNER JOIN
+                    notifications n
+                ON
+                    mcc.user_id = n.user_id
+                WHERE 
+                    mcc.id = :parent
+            `
+        } else { // 댓글
+            sql = `
+                SELECT 
+                    mail_comment as value
+                FROM 
+                    notifications
+                WHERE
+                    user_id = :user_id
+            `
+        }
+        result = await _db.qry(sql, sql_params)
+
+        if(result.length < 1) {
+            return
+        }
+
+        if(result[0]['value'] < 1){
+            return
+        }
+
 
         sql = `
             SELECT
@@ -522,6 +645,30 @@ notify.prototype.notiMailLike = async function (params) {
         if (!fcm_token) {
             return
         }
+
+
+        sql = `
+            SELECT
+                mail_feed_count as value
+            FROM
+                mail m
+            INNER JOIN
+                notifications n
+            ON
+                m.user_id = n.user_id
+            WHERE
+                m.id = :mail_id
+        `
+        result = await _db.qry(sql, sql_params)
+
+        if(result.length < 1) {
+            return
+        }
+
+        if(result[0]['value'] < 1){
+            return
+        }
+
 
         sql = `
             SELECT
@@ -705,114 +852,5 @@ notify.prototype.notiMailFeed = async function (mail_id, insert_list, uid) {
     }
 }
 
-
-
-
-notify.prototype.notiMailFeed = async function (mail_id, insert_list, uid) {
-
-    let sql
-    let sql_params = {uid: uid, mail_id: mail_id}
-    let result
-    let anon
-    let nickname
-
-    try {
-
-        sql = `
-            SELECT
-                anonymous
-            FROM
-                mail_child
-            WHERE
-                mail_id = :mail_id
-            AND
-                friend_id = :uid
-        `
-        result = await _db.qry(sql, sql_params)
-
-        anon = result[0]['anonymous']
-
-        if (anon < 1) {
-
-            sql = `
-                SELECT
-                    name
-                FROM
-                    users
-                WHERE
-                    id = :uid
-            `
-            result = await _db.qry(sql, sql_params)
-
-            nickname = result[0]['name']
-        } else {
-            sql_params['uid'] = 0
-            nickname = "익명의 사용자"
-        }
-
-
-        let msg = notiMsg(2, nickname)
-
-        for (let i = 0, e = insert_list.length; i < e; i++) {
-
-            sql_params['user_id'] = insert_list[i]
-
-            sql = `
-                SELECT 
-                    device_token as fcm_token
-                FROM 
-                    users u
-                WHERE
-                    id = :user_id
-            `
-            result = await _db.qry(sql, sql_params)
-
-            if (result.length < 1) {
-                return
-            }
-
-            const fcm_token = result[0]['fcm_token']
-
-            if (!fcm_token) {
-                return
-            }
-
-
-            sql = `
-                INSERT INTO
-                    messages(
-                        pages, 
-                        detail_type, 
-                        user_id, 
-                        friend_id, 
-                        thumbnail, 
-                        post_id, 
-                        contents
-                    )
-                VALUES
-                    (
-                        1,
-                        2,
-                        :uid,
-                        :user_id,
-                        (SELECT value FROM mail_metas WHERE mail_id = :mail_id AND name = "image" limit 1),
-                        (SELECT id FROM mail_child WHERE friend_id = :user_id AND mail_id = :mail_id),
-                        '${msg}'
-                    )
-            `
-            await _db.qry(sql, sql_params)
-
-
-            const push_data = {
-                title: "rippler",
-                body: msg
-            }
-
-            _fcm.send(fcm_token, push_data)
-        }
-    } catch (e) {
-        _log.e(e.toString())
-    }
-}
 
 module.exports = notify
