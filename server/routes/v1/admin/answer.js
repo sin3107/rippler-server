@@ -56,7 +56,9 @@ router.get('/item', async(req, res) => {
     let result
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'id', type: 'num', required: true},
+        {key: 'page', type: 'num', required: true},
+        {key: 'limit', type: 'num', max: 100, optional: true}
     ]
 
     try{
@@ -77,6 +79,8 @@ router.get('/item', async(req, res) => {
                 question_id = :id
             ORDER BY
                 create_by DESC
+            LIMIT
+                :page, :limit
         `
         result = await _db.qry(sql, valid.params)
 
@@ -94,13 +98,75 @@ router.get('/item', async(req, res) => {
 })
 
 
-
-router.post('/close', async (req, res) => {
-
+router.post('/insert', async (req, res) => {
 
     let sql
     let valid = {}
-    let body = req.query
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'id', type: 'num', required: true},
+        {key: 'contents', type: 'str', required: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+        sql = `
+            INSERT INTO
+                question_relations(
+                    question_id, user, value
+                )
+            VALUES
+                (
+                    :id, 0, :contents
+                )
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.insertId < 1) {
+            _out.print(res, _CONSTANT.ERROR_500, null)
+            return
+        }
+
+        sql = `
+            SELECT
+                user_id
+            FROM
+                questions
+            WHERE
+                id = :id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1){
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        const notify = new Notify()
+        notify.notiAdminMessage(result[0]['user_id'], 1)
+
+        _out.print(res, null, [true])
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
+router.post('/close', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
     let result
 
     const params = [

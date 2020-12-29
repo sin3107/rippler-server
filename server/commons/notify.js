@@ -25,7 +25,7 @@ const notiMsg = function (type, nick) {
 notify.prototype.notiAdminMessage = async function (user_id, num) {
 
     let sql
-    let sql_params = {user_id : user_id}
+    let sql_params = {user_id : user_id, num: num}
     let result
 
     try {
@@ -64,7 +64,7 @@ notify.prototype.notiAdminMessage = async function (user_id, num) {
             VALUES
                 (
                     0,
-                    0,
+                    :num,
                     :user_id,
                     '${msg}'
                 )
