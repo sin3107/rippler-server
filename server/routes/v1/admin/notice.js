@@ -1,30 +1,49 @@
 const express = require('express')
 const router = express.Router()
 
-router.get('/list', async(req, res) => {
+
+router.get('/list', async (req, res) => {
 
     let sql
     let valid = {}
     let body = req.query
     let result
 
-    try{
+    const params = [
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'page', value: 'page', type: 'num', required: true}
+    ]
 
+    try{
+        _util.valid(body, params, valid)
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
         sql = `
-             SELECT
-                
-             FROM
+            SELECT
+                id, subject, contents, create_by, update_by
+            FROM
                 notice
-             ORDER BY
+            ORDER BY
                 create_by DESC
         `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })
-
 
 
 router.get('/item', async(req, res) => {
@@ -35,7 +54,7 @@ router.get('/item', async(req, res) => {
     let result
 
     const params = [
-
+        {key: 'id', type: 'num', required: true}
     ]
 
     try{
@@ -48,15 +67,30 @@ router.get('/item', async(req, res) => {
     try{
 
         sql = `
-             
+            SELECT
+                subject,
+                contents, 
+                create_by,
+                update_by
+            FROM
+                notice            
+            WHERE
+                id = :id
         `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })
-
 
 
 
