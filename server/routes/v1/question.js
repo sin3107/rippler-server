@@ -9,6 +9,10 @@ router.get('/', async (req, res) => {
     let body = req.query
     let result
 
+    const params = [
+        {key: 'page', type: 'num', required: true},
+        {key: 'limit', type: 'num', max: 100, optional: true}
+    ]
 
     try{
         _util.valid(body, params, valid)
@@ -104,6 +108,8 @@ router.get('/', async (req, res) => {
                 A.close_yn = 0
             ORDER BY 
                 B.create_by DESC
+            LIMIT
+                :page, :limit
         `
         result = await _db.qry(sql, valid.params)
 
@@ -129,7 +135,9 @@ router.get('/read', async(req, res) => {
     let result
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'id', type: 'num', required: true},
+        {key: 'page', type: 'num', required: true},
+        {key: 'limit', type: 'num', max: 100, optional: true}
     ]
 
     try{
@@ -156,6 +164,8 @@ router.get('/read', async(req, res) => {
                 q.user_id = :uid
             ORDER BY
                 qr.create_by DESC
+            LIMIT
+                :page, :limit
         `
         result = await _db.qry(sql, valid.params)
 
