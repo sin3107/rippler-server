@@ -10,8 +10,8 @@ router.get('/list', async (req, res) => {
     let result
 
     const params = [
-        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
-        {key: 'page', value: 'page', type: 'num', required: true}
+        {key: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'page', type: 'num', required: true}
     ]
 
     try{
@@ -29,6 +29,8 @@ router.get('/list', async (req, res) => {
                 notice
             ORDER BY
                 create_by DESC
+            LIMIT
+                :page, :limit
         `
         result = await _db.qry(sql, valid.params)
 
@@ -37,7 +39,19 @@ router.get('/list', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                notice
+        `
+        result = await _db.qry(sql, null)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -54,7 +68,7 @@ router.get('/item', async(req, res) => {
     let result
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'id', type: 'num', required: true},
     ]
 
     try{

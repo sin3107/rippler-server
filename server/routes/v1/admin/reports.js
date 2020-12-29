@@ -53,7 +53,22 @@ router.get('/list', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                reports
+            WHERE
+                1=1
+                ${valid.where}
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.print(res, _CONSTANT.ERROR_500, e.toString(), null)

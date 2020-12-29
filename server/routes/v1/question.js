@@ -87,7 +87,6 @@ router.get('/', async (req, res) => {
         }
     }
 
-
     try {
         sql = `
             SELECT 
@@ -118,7 +117,27 @@ router.get('/', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                question_relations qr
+            INNER JOIN
+                questions q
+            ON
+                qr.question_id = q.id
+            WHERE
+                q.close_yn = 0
+            AND
+                q.user_id = :uid
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -174,7 +193,21 @@ router.get('/read', async(req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                question_relations
+            WHERE
+                question_id = :id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)

@@ -6,7 +6,7 @@ router.get('/list', async(req, res) => {
 
     let sql
     let valid = {}
-    let body = req.body
+    let body = req.query
     let result
 
     const params = [
@@ -41,6 +41,10 @@ router.get('/list', async(req, res) => {
             WHERE
                 1=1
                 ${valid.where}
+            AND
+               authorized != 100 
+            ORDER BY
+                create_by DESC
             LIMIT
                 :page, :limit
         `
@@ -51,7 +55,24 @@ router.get('/list', async(req, res) => {
             return
         }
 
-        _out.print(res, null, [true])
+        let out = {item: result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                users
+            WHERE
+                1=1
+                ${valid.where}
+            AND
+                authorized != 100 
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -64,7 +85,7 @@ router.get('/item', async(req, res) => {
 
     let sql
     let valid = {}
-    let body = req.body
+    let body = req.query
     let result
 
     const params = [
@@ -104,7 +125,7 @@ router.get('/item', async(req, res) => {
             return
         }
 
-        _out.print(res, null, [true])
+        _out.print(res, null, result)
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)

@@ -40,7 +40,21 @@ router.get('/list', async(req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                questions
+            WHERE
+                close_yn = 0
+        `
+        result = await _db.qry(sql, null)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -91,7 +105,21 @@ router.get('/item', async(req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                question_relations
+            WHERE
+                question_id = :id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)

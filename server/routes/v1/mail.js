@@ -73,7 +73,33 @@ router.get('/list', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item: result}
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                mail_child mc
+            INNER JOIN
+                mail m
+            ON
+                mc.mail_id = m.id
+            INNER JOIN
+                users u
+            ON
+                u.id = m.user_id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = u.id
+            WHERE
+                mc.friend_id = :uid
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
