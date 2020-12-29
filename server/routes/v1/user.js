@@ -355,6 +355,7 @@ router.post('/phone_chk', async (req, res) => {
     let result
 
     const params = [
+        {key: 'device_id', type: 'str', required: true},
         {key: 'device_model', type: 'str', required: true},
         {key: 'num', type: 'str', required: true}
     ]
@@ -376,6 +377,8 @@ router.post('/phone_chk', async (req, res) => {
                 users            
             WHERE
                 id = :uid
+            AND
+                device_id = :device_id
             AND
                 device_model = :device_model
             AND

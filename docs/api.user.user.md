@@ -356,6 +356,7 @@ token: token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
+|device_id|String| 휴대폰 id |o|
 |device_model|String| 휴대폰 모델 |o|
 |num|String| 전화번호 |o|
 
