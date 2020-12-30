@@ -42,7 +42,11 @@ router.post('/signin', async (req, res) => {
             return
         }
 
-        if(result[0]['stop'] !== 0){
+        if(result[0]['stop'] === 1){
+            _out.print(res, _CONSTANT.BANNED_USER, null)
+            return
+        }
+        if(result[0]['stop'] === 2){
             _out.print(res, _CONSTANT.BANNED_USER, null)
             return
         }

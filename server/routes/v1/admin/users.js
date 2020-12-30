@@ -35,14 +35,14 @@ router.get('/list', async(req, res) => {
                 create_by, 
                 thumbnail, 
                 status_msg, 
-                authorized
+                stop
             FROM 
                 users
             WHERE
                 1=1
                 ${valid.where}
             AND
-               authorized != 100 
+               stop != 100 
             ORDER BY
                 create_by DESC
             LIMIT
@@ -66,7 +66,7 @@ router.get('/list', async(req, res) => {
                 1=1
                 ${valid.where}
             AND
-                authorized != 100 
+                stop != 100 
         `
         result = await _db.qry(sql, valid.params)
 
@@ -112,7 +112,7 @@ router.get('/item', async(req, res) => {
                 create_by, 
                 thumbnail, 
                 status_msg, 
-                authorized,
+                stop,
                 report_cnt
             FROM 
                 users
@@ -160,7 +160,7 @@ router.post('/authorized', async(req, res) => {
             UPDATE
                 users
             SET
-                authorized = :authorized
+                stop = :authorized
             WHERE
                 id = :id
         `
