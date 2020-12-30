@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
+const Notify = require(`${__base}/commons/notify`)
 
-
-router.get('/list', async(req, res) => {
+router.get('/list', async (req, res) => {
 
     let sql
     let valid = {}
@@ -15,14 +15,14 @@ router.get('/list', async(req, res) => {
         {key: 'text', value: 'num', type: 'str', optional: true, where: true, like: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
-    try{
+    try {
 
         sql = `
             SELECT 
@@ -50,7 +50,7 @@ router.get('/list', async(req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        if(result.length < 1) {
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
@@ -74,14 +74,13 @@ router.get('/list', async(req, res) => {
 
         _out.print(res, null, out)
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 })
 
 
-
-router.get('/item', async(req, res) => {
+router.get('/item', async (req, res) => {
 
     let sql
     let valid = {}
@@ -92,14 +91,14 @@ router.get('/item', async(req, res) => {
         {key: 'id', type: 'num', required: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
-    try{
+    try {
 
         sql = `
             SELECT 
@@ -121,21 +120,20 @@ router.get('/item', async(req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        if(result.length < 1) {
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
 
         _out.print(res, null, result)
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 })
 
 
-
-router.post('/authorized', async(req, res) => {
+router.post('/authorized', async (req, res) => {
 
     let sql
     let valid = {}
@@ -147,14 +145,14 @@ router.post('/authorized', async(req, res) => {
         {key: 'authorized', type: 'num', required: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
-    try{
+    try {
 
         sql = `
             UPDATE
@@ -166,14 +164,18 @@ router.post('/authorized', async(req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        if(result.changedRows < 1) {
+        if (result.changedRows < 1) {
             _out.print(res, _CONSTANT.NOT_CHANGED, null)
             return
         }
 
+        if (valid.params['authorized'] === 0) {
+            const notify = new Notify()
+            notify.notiAdminMessage(valid.params['id'], 10)
+        }
         _out.print(res, null, [true])
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 

@@ -10,8 +10,9 @@ router.get('/list', async (req, res) => {
     let result
 
     const params = [
-        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
-        {key: 'page', value: 'page', type: 'num', required: true}
+        {key: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'page',  type: 'num', required: true},
+        {key: 'text', value: 'subject', type: 'str', optional: true, where: true, like: true}
     ]
 
     try{
@@ -27,8 +28,13 @@ router.get('/list', async (req, res) => {
                 id, subject, contents, create_by, update_by
             FROM
                 notice
+            WHERE
+                1=1
+                ${valid.where}
             ORDER BY
                 create_by DESC
+            LIMIT
+                :page, :limit
         `
         result = await _db.qry(sql, valid.params)
 
@@ -44,6 +50,9 @@ router.get('/list', async (req, res) => {
                 COUNT(*) as cnt
             FROM
                 notice
+            WHERE
+                1=1
+                ${valid.where}
         `
         result = await _db.qry(sql, valid.params)
 

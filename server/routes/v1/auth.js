@@ -355,7 +355,7 @@ router.post('/pass_change', async (req, res) => {
 
     const params = [
         {key: 'id', type: 'num', required: true},
-        {key: 'password', value: 'password', type: 'str', required: true}
+        {key: 'password', value: 'password', type: 'str', required: true, update: true}
     ]
 
     try {
