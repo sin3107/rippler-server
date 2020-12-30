@@ -450,7 +450,7 @@ router.get('/authorized', async(req, res) => {
                 UPDATE
                     users
                 SET
-                    authorized = 2
+                    stop = 2
                 WHERE
                     id = :uid
             `
@@ -615,7 +615,7 @@ router.get('/authorized_pool', async(req, res) => {
                 UPDATE
                     users
                 SET
-                    authorized = 2
+                    stop = 2
                 WHERE
                     id = :uid
             `

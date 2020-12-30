@@ -27,7 +27,7 @@ router.post('/signin', async (req, res) => {
     try {
         sql = `
             SELECT
-                id, num, authorized 
+                id, num, stop 
             FROM
                 users
             WHERE
@@ -42,7 +42,7 @@ router.post('/signin', async (req, res) => {
             return
         }
 
-        if(result[0]['authorized'] !== 0){
+        if(result[0]['stop'] !== 0){
             _out.print(res, _CONSTANT.BANNED_USER, null)
             return
         }
@@ -55,7 +55,7 @@ router.post('/signin', async (req, res) => {
     }
 
     try {
-        const token = await _jwt.sign({u: user_id, l: result[0]['num'], a: result[0]['authorized']})
+        const token = await _jwt.sign({u: user_id, l: result[0]['num'], a: result[0]['stop']})
         _out.print(res, null, [token])
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
