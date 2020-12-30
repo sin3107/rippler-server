@@ -111,7 +111,7 @@ router.get('/item', async (req, res) => {
                 create_by, 
                 thumbnail, 
                 status_msg, 
-                stop,
+                stop, 
                 report_cnt
             FROM 
                 users
