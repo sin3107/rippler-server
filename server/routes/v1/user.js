@@ -445,6 +445,17 @@ router.get('/authorized', async(req, res) => {
         }
 
         if(result[0]['authorized'] === 5){
+
+            sql = `
+                UPDATE
+                    users
+                SET
+                    authorized = 2
+                WHERE
+                    id = :uid
+            `
+            await _db.qry(sql, valid)
+
             _out.print(res, _CONSTANT.AUTHORIZED_FAILED, [false])
             return
         }
@@ -600,6 +611,16 @@ router.get('/authorized_pool', async(req, res) => {
         }
 
         if(result[0]['authorized'] === 5){
+            sql = `
+                UPDATE
+                    users
+                SET
+                    authorized = 2
+                WHERE
+                    id = :uid
+            `
+            await _db.qry(sql, valid)
+
             _out.print(res, _CONSTANT.AUTHORIZED_FAILED, [false])
             return
         }
