@@ -15,7 +15,7 @@ token: token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|suspect|Int| 피의자 |o|
+|suspect|Int| 피의자(user_id) |o|
 |reason|String| 사유 다수를 문자열로 |o|
 |content_id|Int| 해당 글의 id |o|
 
@@ -76,7 +76,7 @@ token: token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|suspect|Int| 피의자 |o|
+|suspect|Int| 피의자(user_id) |o|
 |reason|String| 사유 다수를 문자열로 |o|
 |content_id|Int| 해당 글의 id |o|
 
@@ -139,7 +139,7 @@ token: token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|suspect|Int| 피의자 |o|
+|suspect|Int| 피의자(user_id) |o|
 |reason|String| 사유 다수를 문자열로 |o|
 |content_id|Int| 해당 글의 id |o|
 
@@ -200,7 +200,7 @@ token: token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|suspect|Int| 피의자 |o|
+|suspect|Int| 피의자(user_id) |o|
 |reason|String| 사유 다수를 문자열로 |o|
 |content_id|Int| 해당 댓글의 id |o|
 

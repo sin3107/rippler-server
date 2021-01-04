@@ -123,7 +123,7 @@ router.post('/insert', async(req, res) => {
     let result
 
     const params = [
-        {key: 'title', type: 'str', required: true},
+        {key: 'subject', type: 'str', required: true},
         {key: 'contents', type: 'str', required: true}
     ]
 
@@ -138,13 +138,13 @@ router.post('/insert', async(req, res) => {
         sql = `
             INSERT INTO 
                 notice (
-                    title,
+                    subject,
                     contents
                 )
             VALUES
                 (
-                    :title,
-                    :contents,
+                    :subject,
+                    :contents
                 )
         `
         result = await _db.qry(sql, valid.params)
@@ -172,7 +172,7 @@ router.post('/update', async(req, res) => {
 
     const params = [
         {key: 'id', type: 'num', required: true},
-        {key: 'title', value: 'title', type: 'str', optional: true, update: true},
+        {key: 'subject', value: 'subject', type: 'str', optional: true, update: true},
         {key: 'contents', value: 'contents', type: 'str', optional: true, update: true}
     ]
 

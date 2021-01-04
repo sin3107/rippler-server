@@ -47,20 +47,32 @@ response
     "data": {
         "item": [
             {
-                "id": 4,
-                "profile_order": 1,
-                "profile_type": 0,
-                "nickname": "aaa",
-                "status_msg": "a",
-                "thumbnail": 1
+                "id": 2,
+                "title": "2번글",
+                "contents": "2번글",
+                "user_id": 5,
+                "profile_id": 5,
+                "me": 1,
+                "nickname": "bbb",
+                "thumbnail": 1,
+                "create_by": "2020-12-18 14:07:06",
+                "keywords": "[{\"id\": 11, \"name\": \"친구\", \"cnt\": 20},{\"id\": 14, \"name\": \"친구구함\", \"cnt\": 18},{\"id\": 17, \"name\": \"연애\", \"cnt\": 22}]",
+                "media": "[{\"id\": 5, \"type\": \"image\"},{\"id\": 78, \"type\": \"image\"}]",
+                "total_count": 107
             },
             {
-                "id": 5,
-                "profile_order": 2,
-                "profile_type": 1,
+                "id": 1,
+                "title": "1번글",
+                "contents": "1번글",
+                "user_id": 5,
+                "profile_id": 5,
+                "me": 1,
                 "nickname": "bbb",
-                "status_msg": "bbb",
-                "thumbnail": 1
+                "thumbnail": 1,
+                "create_by": "2020-12-18 14:07:06",
+                "keywords": "[{\"id\": 11, \"name\": \"친구\", \"cnt\": 20},{\"id\": 14, \"name\": \"친구구함\", \"cnt\": 18},{\"id\": 17, \"name\": \"연애\", \"cnt\": 22}]",
+                "media": "[{\"id\": 5, \"type\": \"image\"},{\"id\": 78, \"type\": \"image\"}]",
+                "total_count": 107
             }
         ],
         "item_length": 2,

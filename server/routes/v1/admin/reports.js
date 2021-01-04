@@ -13,7 +13,9 @@ router.get('/list', async (req, res) => {
         {key: 'page', type: 'num', required: true},
         {key: 'limit', type: 'num', max: 100, optional: true},
         {key: 'type', value: 'r.report_type', type: 'num', optional: true, where: true, eq: true},
-        {key: 'reason', value: 'r.reason', type: 'num', optional: true, where: true, like: true}
+        {key: 'reason', value: 'r.reason', type: 'num', optional: true, where: true, like: true},
+        {key: 'reporter', value: 'r.reporter', type: 'num', optional: true, where: true, eq: true},
+        {key: 'suspect', value: 'r.suspect', type: 'num', optional: true, where: true, eq: true},
     ]
 
     try {
@@ -43,6 +45,8 @@ router.get('/list', async (req, res) => {
             WHERE
                 1=1
                 ${valid.where}
+            ORDER BY
+                create_by DESC
             LIMIT
                 :page, :limit
         `
@@ -100,8 +104,11 @@ router.get('/item', async (req, res) => {
 
         sql = `
             SELECT
-                r.id, r.reporter, r.suspect, r.reason, r.report_type, r.content_id, r.create_by,
-                re.name as reporter_name, su.name as suspect_name
+                r.id, r.reason, r.report_type, r.content_id, r.create_by,
+                r.reporter, re.name as re_name, re.gender as re_gender, re.num as re_num, re.create_by as re_create_by, 
+                re.birth as re_birth, re.email as re_email, re.thumbnail as re_thumbnail, re.report_cnt as re_report_cnt, re.stop as re_stop,
+                r.suspect, su.name as su_name, su.gender as su_gender, su.num as su_num, su.create_by as su_create_by, 
+                su.birth as su_birth, su.email as su_email, su.thumbnail as su_thumbnail, su.report_cnt as su_report_cnt, su.stop as su_stop
             FROM
                 reports r
             INNER JOIN
@@ -129,6 +136,7 @@ router.get('/item', async (req, res) => {
     }
 
 })
+
 
 
 //경고
