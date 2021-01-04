@@ -205,6 +205,9 @@ router.get('/list', async (req, res) => {
 
         await conn.commit()
         conn.release()
+
+        _util.toJson(out['item'], 'keywords', 'media')
+
         _out.print(res, null, out)
 
     } catch (e) {
@@ -386,6 +389,8 @@ router.get('/search_result', async (req, res) => {
 
         out['me'] = result[0]['cnt']
 
+        _util.toJson(out['item'], 'keywords', 'media')
+
         _out.print(res, null, out)
 
     } catch (e) {
@@ -469,8 +474,8 @@ router.get('/item', async (req, res) => {
                                     'name', name,
                                     'value', value
                                 )
-                            )
-                        )
+                            ),
+                        ']')
                     FROM 
                         interest_metas 
                     WHERE 
@@ -492,6 +497,8 @@ router.get('/item', async (req, res) => {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
+
+        _util.toJson(result, 'keywords', 'medias')
 
         _out.print(res, null, result)
 
@@ -857,6 +864,8 @@ router.get('/best_comments', async (req, res) => {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
+
+        _util.toJson(result, 'parent_comment')
 
         _out.print(res, null, result)
 

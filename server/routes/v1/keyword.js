@@ -35,6 +35,8 @@ router.get('/list', async (req, res) => {
             return
         }
 
+        _util.toJson(result, 'child')
+
         _out.print(res, null, result)
 
     } catch (e) {

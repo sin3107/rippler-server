@@ -133,6 +133,8 @@ router.get('/main', async (req, res) => {
             return
         }
 
+        _util.toJson(result, 'file')
+
         _out.print(res, null, result)
 
     }catch (e) {
@@ -194,6 +196,8 @@ router.get('/share_feed', async (req, res) => {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
+
+        _util.toJson(result, 'file')
 
         _out.print(res, null, result)
 

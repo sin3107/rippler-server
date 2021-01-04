@@ -174,11 +174,13 @@ router.get('/content', async (req, res) => {
                     i.title, i.contents,
                     (
                         SELECT 
-                            GROUP_CONCAT(
-                                JSON_OBJECT(
-                                    "name", name, "value", value
-                                )
-                            ) 
+                            CONCAT('[', 
+                                GROUP_CONCAT(
+                                    JSON_OBJECT(
+                                        'name', name, 'value', value
+                                    )
+                                ), 
+                            ']') 
                         FROM 
                             interest_metas 
                         WHERE 
@@ -226,6 +228,8 @@ router.get('/content', async (req, res) => {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
+
+        _util.toJson(result, 'media')
 
         _out.print(res, null, result)
 
