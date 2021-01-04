@@ -524,7 +524,7 @@ router.post('/favorite', async (req, res) => {
     let result
 
     const params = [
-        {key: 'friend_id', value: 'friend_id', where: true, eq: true}
+        {key: 'friend_id', value: 'friend_id', type: 'num', required: true, where: true, eq: true}
     ]
 
     try {
@@ -561,6 +561,7 @@ router.post('/favorite', async (req, res) => {
     }
 
 })
+
 
 
 router.post('/blind', async (req, res) => {
