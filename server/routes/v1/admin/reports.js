@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const Notify = require( `${__base}/commons/notify` )
+const Notify = require(`${__base}/commons/notify`)
 
 router.get('/list', async (req, res) => {
 
@@ -57,7 +57,7 @@ router.get('/list', async (req, res) => {
             return
         }
 
-        let out = {item : result}
+        let out = {item: result}
 
         sql = `
             SELECT
@@ -137,6 +137,103 @@ router.get('/item', async (req, res) => {
 
 })
 
+
+router.get('/content', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'content_id', type: 'num', required: true},
+        {key: 'report_type', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+
+        if (valid.params['report_type'] === 1) {
+            sql = `
+                SELECT
+                    parent, contents
+                FROM
+                    interest_comments
+                WHERE
+                    id = :content_id
+            `
+        } else if (valid.params['report_type'] === 2) {
+            sql = `
+                SELECT
+                    i.title, i.contents,
+                    (
+                        SELECT 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "name", name, "value", value
+                                )
+                            ) 
+                        FROM 
+                            interest_metas 
+                        WHERE 
+                            post_id = i.id
+                    ) AS media
+                FROM
+                    interest i
+                WHERE
+                    i.id = :content_id
+            `
+        } else if (valid.params['report_type'] === 3) {
+            sql = `
+                SELECT
+                    parent, contents
+                FROM
+                    mail_comments_child
+                WHERE
+                    id = :content_id
+            `
+        } else {
+            sql = `
+                SELECT
+                    mc.title, mc.contents,
+                    (
+                        SELECT 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "name", name, "value", value
+                                )
+                            ) 
+                        FROM 
+                            mail_metas 
+                        WHERE 
+                            mail_id = mc.mail_id
+                    ) AS media
+                FROM
+                    mail_child mc
+                WHERE
+                    mc.id = :content_id
+            `
+        }
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
 
 
 //경고

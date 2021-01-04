@@ -235,12 +235,14 @@ router.post('/create', async (req, res) => {
     let result
 
     let pool_id = 0
+    let thumbnail = ``
+    let thumbnail_param = ``
 
     const params = [
         {key: 'name', type: 'str', require: true},
         {key: 'friend_list', type: 'arr', require: true},
-        {key: 'thumbnail', type: 'num', require: true},
-        {key: 'favorite', type: 'bool', require: true}
+        {key: 'thumbnail', type: 'num', optional: true},
+        {key: 'favorite', type: 'num', require: true}
     ]
 
     try {
@@ -253,14 +255,20 @@ router.post('/create', async (req, res) => {
 
     try {
 
+        if(valid.params['thumbnail']){
+            thumbnail = `, thumbnail`
+            thumbnail_param = `, :thumbnail`
+        }
+
+
         sql = `
             INSERT INTO
                 pools(
-                    user_id, name, thumbnail, favorite    
+                    user_id, name, favorite ${thumbnail}
                 )
             VALUES
                 (
-                    :uid, :name, :thumbnail, :favorite
+                    :uid, :name, :favorite ${thumbnail_param}
                 )
         `
 
