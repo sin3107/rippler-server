@@ -108,7 +108,8 @@ router.get('/item', async (req, res) => {
                 r.reporter, re.name as re_name, re.gender as re_gender, re.num as re_num, re.create_by as re_create_by, 
                 re.birth as re_birth, re.email as re_email, re.thumbnail as re_thumbnail, re.report_cnt as re_report_cnt, re.stop as re_stop,
                 r.suspect, su.name as su_name, su.gender as su_gender, su.num as su_num, su.create_by as su_create_by, 
-                su.birth as su_birth, su.email as su_email, su.thumbnail as su_thumbnail, su.report_cnt as su_report_cnt, su.stop as su_stop
+                su.birth as su_birth, su.email as su_email, su.thumbnail as su_thumbnail, su.report_cnt as su_report_cnt, su.stop as su_stop,
+                r.complete
             FROM
                 reports r
             INNER JOIN
@@ -235,6 +236,133 @@ router.get('/content', async (req, res) => {
         _out.print(res, null, result)
 
     } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+
+router.get('/content_delete', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'content_id', type: 'num', required: true},
+        {key: 'report_type', type: 'num', required: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    const conn = await _db.getConn()
+
+    try {
+
+        await conn.beginTransaction()
+
+        if (valid.params['report_type'] === 1) {
+
+            sql = `
+                DELETE FROM
+                    interest_comments
+                WHERE
+                    id = :content_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+        } else if (valid.params['report_type'] === 2) {
+
+            sql = `
+                DELETE
+                    i, ik, ikr
+                FROM
+                    interest i
+                INNER JOIN
+                    interest_keywords ik
+                ON 
+                    i.id = ik.post_id
+                LEFT JOIN
+                    interest_keyword_relations ikr
+                ON
+                    ik.id = ikr.ik_id
+                WHERE
+                    i.id = :content_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+            sql = `
+                DELETE FROM
+                    interest_metas
+                WHERE
+                    post_id = :id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                DELETE 
+                    ic, icr
+                FROM
+                    interest_comments ic
+                LEFT JOIN
+                    interest_comment_relations icr
+                ON
+                    ic.id = icr.ic_id
+                WHERE
+                    ic.post_id = 13
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+        } else if (valid.params['report_type'] === 3) {
+
+            sql = `
+                SELECT
+                    parent, contents
+                FROM
+                    mail_comments_child
+                WHERE
+                    id = :content_id
+            `
+
+        } else {
+
+            sql = `
+                SELECT
+                    mc.title, mc.contents,
+                    (
+                        SELECT 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "name", name, "value", value
+                                )
+                            ) 
+                        FROM 
+                            mail_metas 
+                        WHERE 
+                            mail_id = mc.mail_id
+                    ) AS media
+                FROM
+                    mail_child mc
+                WHERE
+                    mc.id = :content_id
+            `
+
+        }
+
+        await conn.commit()
+        conn.release()
+
+        _out.print(res, null, [true])
+
+    } catch (e) {
+        await conn.rollback()
+        conn.release()
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 

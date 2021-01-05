@@ -323,7 +323,6 @@ token: token
 |keyword_list|Array| 키워드 text 배열 |o|
 |post_type|Int| 게시물 타입 (0:text short, 1:text long, 2:image, 3:video) |o|
 
-
 ### response
 
 |name|type|desc|

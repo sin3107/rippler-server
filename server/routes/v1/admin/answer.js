@@ -16,7 +16,7 @@ router.get('/list', async(req, res) => {
                 q.user_id, 
                 (
                     SELECT
-                        JSON_OBJECT("chk", user, "message", value)
+                        JSON_OBJECT("chk", user, "message", value, "create_by", create_by)
                     FROM
                         question_relations
                     WHERE
@@ -53,6 +53,8 @@ router.get('/list', async(req, res) => {
         result = await _db.qry(sql, null)
 
         out['total'] = result[0]['cnt']
+
+        _util.toJson(out['item'], 'last_message')
 
         _out.print(res, null, out)
 
