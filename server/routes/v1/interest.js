@@ -134,7 +134,8 @@ router.get('/list', async (req, res) => {
                     WHERE 
                         att.post_id = A.post_id 
                 ) AS media,
-                G.total_count
+                G.total_count,
+                B.post_type
             FROM 
                 TEMP_POST A
             LEFT JOIN 
@@ -347,7 +348,8 @@ router.get('/search_result', async (req, res) => {
                         interest_keywords ik2
                     WHERE
                         ik2.post_id = i.id
-                ) as total_count
+                ) as total_count,
+                i.post_type
             FROM
                 interest i
             INNER JOIN
@@ -480,7 +482,8 @@ router.get('/item', async (req, res) => {
                         interest_metas 
                     WHERE 
                         post_id = :post_id
-                ) as medias
+                ) as medias,
+                i.post_type
             FROM 
                 interest i
             LEFT JOIN 
@@ -522,7 +525,8 @@ router.post('/insert_feed', async (req, res) => {
         {key: 'title', type: 'str', required: true},
         {key: 'contents', type: 'str', required: true},
         {key: 'media', type: 'arr', optional: true},
-        {key: 'keyword_list', type: 'arr', required: true}
+        {key: 'keyword_list', type: 'arr', required: true},
+        {key: 'post_type', type: 'num', required: true}
     ]
 
     try {
@@ -541,11 +545,11 @@ router.post('/insert_feed', async (req, res) => {
         sql = `
             INSERT INTO
                 interest(
-                    profile_id, user_id, title, contents
+                    profile_id, user_id, title, contents, post_type
                 )
             VALUES 
                 (
-                    :profile_id, :uid, :title, :contents
+                    :profile_id, :uid, :title, :contents, :post_type
                 )
         `
         result = await _db.execQry(conn, sql, valid.params)
