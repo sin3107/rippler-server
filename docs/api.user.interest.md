@@ -58,7 +58,8 @@ response
                 "create_by": "2020-12-18 14:07:06",
                 "keywords": "[{\"id\": 11, \"name\": \"친구\", \"cnt\": 20},{\"id\": 14, \"name\": \"친구구함\", \"cnt\": 18},{\"id\": 17, \"name\": \"연애\", \"cnt\": 22}]",
                 "media": "[{\"id\": 5, \"type\": \"image\"},{\"id\": 78, \"type\": \"image\"}]",
-                "total_count": 107
+                "total_count": 107,
+                "post_type": 1
             },
             {
                 "id": 1,
@@ -72,7 +73,8 @@ response
                 "create_by": "2020-12-18 14:07:06",
                 "keywords": "[{\"id\": 11, \"name\": \"친구\", \"cnt\": 20},{\"id\": 14, \"name\": \"친구구함\", \"cnt\": 18},{\"id\": 17, \"name\": \"연애\", \"cnt\": 22}]",
                 "media": "[{\"id\": 5, \"type\": \"image\"},{\"id\": 78, \"type\": \"image\"}]",
-                "total_count": 107
+                "total_count": 107,
+                "post_type": 1
             }
         ],
         "item_length": 2,
@@ -273,7 +275,8 @@ response
                 "update_by": "2020-12-16 18:26:42",
                 "keywords": "[{\"id\": 28, \"keyword_id\": 19, \"name\": \"커플\", \"cnt\": 64},{\"id\": 27, \"keyword_id\": 12, \"name\": \"우정\", \"cnt\": 18},{\"id\": 26, \"keyword_id\": 11, \"name\": \"친구\", \"cnt\": 13}]",
                 "media": "[{\"id\": 7, \"type\": \"image\"}]",
-                "total_count": 95
+                "total_count": 95,
+                "post_type": 1
             },
             {
                 "id": 4,
@@ -287,7 +290,8 @@ response
                 "update_by": "2020-12-16 18:26:42",
                 "keywords": "[{\"id\": 19, \"keyword_id\": 13, \"name\": \"친구공유\", \"cnt\": 300},{\"id\": 18, \"keyword_id\": 12, \"name\": \"우정\", \"cnt\": 200},{\"id\": 17, \"keyword_id\": 11, \"name\": \"친구\", \"cnt\": 100}]",
                 "media": "[{\"id\": 4, \"type\": \"image\"}]",
-                "total_count": 600
+                "total_count": 600,
+                "post_type": 1
             }
         ],
         "me": 1, // 검색한 키워드 현재 추가되어 있는지 여부 (1: 추가되어있음, 0: 없음)
@@ -317,6 +321,7 @@ token: token
 |contents|String| 내용 |o|
 |media|Array| 첨부파일 배열 |x|
 |keyword_list|Array| 키워드 text 배열 |o|
+|post_type|Int| 게시물 타입 (0:text short, 1:text long, 2:image, 3:video) |o|
 
 
 ### response
