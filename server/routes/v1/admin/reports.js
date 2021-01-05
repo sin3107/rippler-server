@@ -14,8 +14,8 @@ router.get('/list', async (req, res) => {
         {key: 'limit', type: 'num', max: 100, optional: true},
         {key: 'type', value: 'r.report_type', type: 'num', optional: true, where: true, eq: true},
         {key: 'reason', value: 'r.reason', type: 'num', optional: true, where: true, like: true},
-        {key: 'reporter', value: 'r.reporter', type: 'num', optional: true, where: true, eq: true},
-        {key: 'suspect', value: 'r.suspect', type: 'num', optional: true, where: true, eq: true},
+        {key: 'reporter', value: 'r.reporter', type: 'num', optional: true, where: true, like: true},
+        {key: 'suspect', value: 'r.suspect', type: 'num', optional: true, where: true, like: true},
     ]
 
     try {
@@ -63,7 +63,7 @@ router.get('/list', async (req, res) => {
             SELECT
                 COUNT(*) as cnt
             FROM
-                reports
+                reports r
             WHERE
                 1=1
                 ${valid.where}
@@ -75,7 +75,7 @@ router.get('/list', async (req, res) => {
         _out.print(res, null, out)
 
     } catch (e) {
-        _out.print(res, _CONSTANT.ERROR_500, e.toString(), null)
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })
@@ -136,6 +136,7 @@ router.get('/item', async (req, res) => {
     }
 
 })
+
 
 
 router.get('/content', async (req, res) => {

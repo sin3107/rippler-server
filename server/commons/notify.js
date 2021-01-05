@@ -204,6 +204,8 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
     let sql_params = {comment_id: comment_id, profile_id: profile_id}
     let result
 
+
+
     try {
 
         sql = `
@@ -230,7 +232,6 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
             return
         }
 
-
         sql = `
             SELECT
                 n.interest_comment_count as value
@@ -252,7 +253,6 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
         if(result[0]['value'] < 1){
             return
         }
-
 
         sql = `
             SELECT

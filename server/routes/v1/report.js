@@ -2,6 +2,36 @@ const express = require('express')
 const router = express.Router()
 
 
+router.get('/report_reason', async(req, res) => {
+
+    let sql
+    let result
+
+    try {
+        sql = `
+            SELECT
+                id, value
+            FROM
+                common_code
+            WHERE
+                name = 'report_reason'
+        `
+
+        result = await _db.qry(sql, null)
+
+        if(result.length < 1){
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+        _out.print(res, null, result)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
 router.post('/interest_feed', async (req, res) => {
 
     let sql

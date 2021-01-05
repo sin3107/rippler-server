@@ -29,6 +29,7 @@ router.get('/list', async (req, res) => {
             SELECT
                 mc.id,
                 mc.mail_id,
+                m.mail_type,
                 m.user_id,
                 u.name,
                 CASE 
@@ -46,7 +47,22 @@ router.get('/list', async (req, res) => {
                 CASE WHEN mc.friend_id = u.id THEN 1 ELSE 0 END AS my_post,
                 (SELECT COUNT(*) AS cnt FROM mail_relations mr WHERE m_id = mc.mail_id AND user_id = :uid) as me,
                 m.create_by,
-                mc.update_by
+                mc.update_by,
+                (
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "name", name, 
+                                    "value", value 
+                                )
+                            ),
+                        ']') 
+                    FROM 
+                        mail_metas 
+                    WHERE 
+                        mail_id = m.id
+                ) as medias
             FROM
                 mail_child mc
             INNER JOIN
@@ -97,6 +113,8 @@ router.get('/list', async (req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
+        _util.toJson(out['item'], 'medias')
+
         out['total'] = result[0]['cnt']
 
         _out.print(res, null, out)
@@ -133,6 +151,7 @@ router.get('/item', async (req, res) => {
             SELECT
                 mc.id,
                 mc.mail_id,
+                m.mail_type,
                 m.user_id,
                 u.name,
                 CASE 
@@ -150,7 +169,22 @@ router.get('/item', async (req, res) => {
                 CASE WHEN mc.friend_id = u.id THEN 1 ELSE 0 END AS my_post,
                 (SELECT COUNT(*) AS cnt FROM mail_relations mr WHERE m_id = mc.mail_id AND user_id = :uid) as me,
                 m.create_by,
-                mc.update_by
+                mc.update_by,
+                (
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "name", name, 
+                                    "value", value 
+                                )
+                            ),
+                        ']') 
+                    FROM 
+                        mail_metas 
+                    WHERE 
+                        mail_id = m.id
+                ) as medias
             FROM
                 mail_child mc
             INNER JOIN
@@ -177,7 +211,7 @@ router.get('/item', async (req, res) => {
             _out.print(res, _CONSTANT.ERROR_500, null)
             return
         }
-
+        _util.toJson(result, 'medias')
         _out.print(res, null, result)
 
     } catch (e) {
@@ -205,7 +239,8 @@ router.post('/insert_feed', async (req, res) => {
         {key: 'media', type: 'arr', optional: true},
         {key: 'friend_list', type: 'arr', required: true},
         {key: 'pool_list', type: 'arr', optional: true},
-        {key: 'share', type: 'num', optional: true}
+        {key: 'share', type: 'num', optional: true},
+        {key: 'mail_type', type: 'num', required: true}
     ]
 
     try {
@@ -223,22 +258,22 @@ router.post('/insert_feed', async (req, res) => {
         sql = `
             INSERT INTO 
                 mail (
-                    user_id, count
+                    user_id, count, mail_type
                 ) 
             VALUES 
                 (
-                    :uid, 0
+                    :uid, 0, :mail_type
                 )
         `
         if(valid.params['share']){
             sql = `
             INSERT INTO 
                 mail (
-                    user_id, count, share
+                    user_id, count, share, mail_type
                 ) 
             VALUES 
                 (
-                    :uid, 0, :share
+                    :uid, 0, :share, :mail_type
                     
                 )
         `

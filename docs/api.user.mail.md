@@ -49,6 +49,7 @@ response
             {
                 "id": 42,
                 "mail_id": 32,
+                "mail_type": 1, //게시물 타입 (0:text short, 1:text long, 2:image, 3:video)
                 "user_id": 5,
                 "name": "555",
                 "thumbnail": 5,
@@ -60,11 +61,26 @@ response
                 "my_post": 0,
                 "me": 0,
                 "create_by": "2020-12-18 17:04:29",
-                "update_by": "2020-12-22 16:57:13"
+                "update_by": "2020-12-22 16:57:13",
+                "medias": [
+                    {
+                        "name": "image",
+                        "value": 1
+                    },
+                    {
+                        "name": "video",
+                        "value": 5
+                    },
+                    {
+                        "name": "pools",
+                        "value": 1
+                    }
+                ]
             },
             {
                 "id": 30,
                 "mail_id": 33,
+                "mail_type": 1,
                 "user_id": 3,
                 "name": "333",
                 "thumbnail": 3,
@@ -76,7 +92,21 @@ response
                 "my_post": 0,
                 "me": 0,
                 "create_by": "2020-12-20 01:53:27",
-                "update_by": null
+                "update_by": null,
+                "medias": [
+                    {
+                        "name": "image",
+                        "value": 1
+                    },
+                    {
+                        "name": "video",
+                        "value": 5
+                    },
+                    {
+                        "name": "pools",
+                        "value": 1
+                    }
+                ]
             },
             ........
         ],
@@ -133,6 +163,7 @@ response
             {
                 "id": 42,
                 "mail_id": 32,
+                "mail_type": 1, //게시물 타입 (0:text short, 1:text long, 2:image, 3:video)
                 "user_id": 5,
                 "name": "555",
                 "thumbnail": 5,
@@ -144,7 +175,21 @@ response
                 "my_post": 0,
                 "me": 0,
                 "create_by": "2020-12-18 17:04:29",
-                "update_by": "2020-12-22 16:57:13"
+                "update_by": "2020-12-22 16:57:13",
+                "medias": [
+                    {
+                        "name": "image",
+                        "value": 1
+                    },
+                    {
+                        "name": "video",
+                        "value": 5
+                    },
+                    {
+                        "name": "pools",
+                        "value": 1
+                    }
+                ]
             }
         ],
         "item_length": 1,
@@ -175,6 +220,7 @@ token: token
 |media|Array| 첨부파일 배열 |x|
 |friend_list|Array| 공개대상에 추가할 친구 목록 |o|
 |pool_list|Array| 공개대상에 추가할 풀 목록 |x|
+|mail_type|Int| 게시물 타입 (0:text short, 1:text long, 2:image, 3:video) |o|
 
 ### response
 
