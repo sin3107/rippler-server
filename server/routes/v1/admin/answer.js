@@ -6,7 +6,22 @@ const Notify = require( `${__base}/commons/notify` )
 router.get('/list', async(req, res) => {
 
     let sql
+    let valid = {}
+    let body = req.query
     let result
+
+
+    const params = [
+        {key: 'page', type: 'num', required: true},
+        {key: 'limit', type: 'num', max: 100, optional: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
 
     try{
 
@@ -14,6 +29,7 @@ router.get('/list', async(req, res) => {
             SELECT
                 q.id, 
                 q.user_id, 
+                u.name,
                 (
                     SELECT
                         JSON_OBJECT("chk", user, "message", value, "create_by", create_by)
@@ -28,12 +44,18 @@ router.get('/list', async(req, res) => {
                 q.create_by
             FROM
                 questions q
+            INNER JOIN
+                users u
+            ON
+                q.user_id = u.id
             WHERE
-                close_yn = 0
+                q.close_yn = 0
             ORDER BY
-                create_by DESC
+                q.create_by DESC
+            LIMIT
+                :page, :limit
         `
-        result = await _db.qry(sql, null)
+        result = await _db.qry(sql, valid.params)
 
         if(result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
@@ -46,7 +68,11 @@ router.get('/list', async(req, res) => {
             SELECT
                 COUNT(*) as cnt
             FROM
-                questions
+                questions q
+            INNER JOIN
+                users u
+            ON
+                q.user_id = u.id
             WHERE
                 close_yn = 0
         `
@@ -120,6 +146,26 @@ router.get('/item', async(req, res) => {
         result = await _db.qry(sql, valid.params)
 
         out['total'] = result[0]['cnt']
+
+
+        sql = `
+            SELECT
+                q.id, 
+                q.user_id, 
+                u.name,
+                q.create_by
+            FROM
+                questions q
+            INNER JOIN
+                users u
+            ON
+                q.user_id = u.id
+            WHERE
+                q.id = :id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['top'] = result[0]
 
         _out.print(res, null, out)
 

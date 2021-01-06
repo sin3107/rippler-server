@@ -269,17 +269,23 @@ router.get('/content_delete', async (req, res) => {
         await conn.beginTransaction()
 
         if (valid.params['report_type'] === 1) {
-
+            //o
             sql = `
-                DELETE FROM
-                    interest_comments
+                DELETE
+                    ic, icr
+                FROM
+                    interest_comments ic
+                LEFT JOIN
+                    interest_comment_relations icr
+                ON
+                    ic.id = icr.ic_id
                 WHERE
-                    id = :content_id
+                    ic.id = :content_id
             `
             await _db.execQry(conn, sql, valid.params)
 
         } else if (valid.params['report_type'] === 2) {
-
+            //o
             sql = `
                 DELETE
                     i, ik, ikr
@@ -297,6 +303,7 @@ router.get('/content_delete', async (req, res) => {
                     i.id = :content_id
             `
             await _db.execQry(conn, sql, valid.params)
+
             sql = `
                 DELETE FROM
                     interest_metas
@@ -320,7 +327,7 @@ router.get('/content_delete', async (req, res) => {
             await _db.execQry(conn, sql, valid.params)
 
         } else if (valid.params['report_type'] === 3) {
-
+            //x
             sql = `
                 SELECT
                     parent, contents
@@ -331,7 +338,7 @@ router.get('/content_delete', async (req, res) => {
             `
 
         } else {
-
+            //x
             sql = `
                 SELECT
                     mc.title, mc.contents,
