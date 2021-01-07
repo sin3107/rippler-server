@@ -60,7 +60,6 @@ router.post('/signin', async (req, res) => {
         return
     }
 
-    console.log(result[0]['stop'])
     try {
         const token = await _jwt.sign({u: user_id, l: result[0]['num'], a: result[0]['stop']})
         _out.print(res, null, [token])
@@ -154,7 +153,7 @@ router.post('/signup', async (req, res) => {
         await conn.commit()
         conn.release()
 
-        _out.print(res, null, ['true'])
+        _out.print(res, null, [id])
 
     } catch (e) {
         await conn.rollback()
