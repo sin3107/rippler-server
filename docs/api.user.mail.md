@@ -688,9 +688,9 @@ response
     "data": {
         "item": [
             {
-                "id": 35,
-                "mail_com_id": 6,
-                "parent": 0,
+                "id": 35, // 내가보는 게시물의 댓글 id
+                "mail_com_id": 6, // 동일 댓글의 부모 id
+                "parent": 0, 
                 "contents": "적을내용",
                 "user_id": 2,
                 "create_by": "2020-12-21 13:42:27",
@@ -712,7 +712,7 @@ response
 # child comment list
 하나의 댓글에 대한 대댓글 목록
 
-GET /api/v1/mail/comment_list HTTP  
+GET /api/v1/mail/comment_child_list HTTP  
 HOST: rippler.chaeft.com    
 token : token
 
@@ -721,6 +721,7 @@ token : token
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
 |id|Int| 게시물 id |o|
+|mail_com_id|Int| 부모댓글의 parent_id |o|
 
 ### response
 
@@ -739,7 +740,7 @@ token : token
 request  
 ```bash
 # 하나의 댓글에 대한 대댓글 목록 호출
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail/comment_child_list?id=34&comment_id=35' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail/comment_child_list?id=34&mail_com_id=35' \
 -H 'token: token' \
 ```
 
@@ -787,7 +788,7 @@ token: token
 |:---:|:---:|:---:|:---:|
 |mail_id|Int| 게시글 본문인 mail_id |o|
 |user_id|Int| 게시글 작성자 id |o|
-|parent|Int| 댓글, 대댓글 여부(0:댓글 / 이외(댓글의 id) : 대댓글) |o|
+|parent|Int| 댓글, 대댓글 여부(0:댓글 / 이외 : 대댓글(댓글의 mail_com_id 입력)) |o|
 |id|Int| 게시글 id |o|
 |contents|String| 내용 |o|
 
@@ -814,7 +815,7 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/mail/insert_comment' \
 -d '{
     "mail_id": 43,
     "user_id": 4,
-    "parent": 0,
+    "parent": 0, //대댓글일 경우 댓글의 mail_com_id 입력
     "id": 47,
     "contents": "abcabc"
 }'

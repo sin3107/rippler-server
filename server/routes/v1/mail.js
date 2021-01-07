@@ -1021,7 +1021,7 @@ router.get('/comment_list', async (req, res) => {
                     WHERE 
                         mail_child_id = :id
                     AND
-                        parent = mcc.id
+                        parent = mcc.mail_com_id
                 ) as total_comment_count
             FROM 
                 mail_comments_child mcc
@@ -1066,7 +1066,7 @@ router.get('/comment_child_list', async (req, res) => {
 
     const params = [
         {key: 'id', type: 'num', required: true},
-        {key: 'comment_id', type: 'num', required: true}
+        {key: 'mail_com_id', type: 'num', required: true}
     ]
 
     try {
@@ -1109,7 +1109,7 @@ router.get('/comment_child_list', async (req, res) => {
             WHERE 
                 mcc.mail_child_id = :id 
             AND 
-                mcc.parent = :comment_id
+                mcc.parent = :mail_com_id
             ORDER BY 
                 create_by DESC
         `
