@@ -9,7 +9,6 @@ const notice = require( `${__base}/routes/v1/admin/notice` )
 
 router.use(async(req, res, next) => {
     if (!_util.hasK(req, 'uinfo') || !_util.hasK(req.uinfo, 'a') || req.uinfo['a'] !== parseInt(process.env.LEVEL_ADMIN) ) {
-        console.log(req.uinfo['a'])
         _out.err(res, _CONSTANT.NOT_AUTHORIZED, 'is not admin', null)
         return
     }

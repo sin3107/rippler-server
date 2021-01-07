@@ -555,7 +555,6 @@ router.post('/delete_feed', async (req, res) => {
         `
         await _db.execQry(conn, sql, valid.params)
 
-
         sql = `
             DELETE FROM 
                 mail_targets 
@@ -575,6 +574,14 @@ router.post('/delete_feed', async (req, res) => {
         sql = `
             DELETE FROM 
                 mail_metas 
+            WHERE 
+                mail_id = :mail_id
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            DELETE FROM 
+                mail_pools 
             WHERE 
                 mail_id = :mail_id
         `

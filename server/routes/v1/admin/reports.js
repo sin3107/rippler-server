@@ -139,7 +139,6 @@ router.get('/item', async (req, res) => {
 })
 
 
-
 router.get('/content', async (req, res) => {
 
     let sql
@@ -226,7 +225,7 @@ router.get('/content', async (req, res) => {
         }
         result = await _db.qry(sql, valid.params)
 
-        if(result.length < 1) {
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
@@ -242,12 +241,11 @@ router.get('/content', async (req, res) => {
 })
 
 
-
-router.get('/content_delete', async (req, res) => {
+router.post('/content_delete', async (req, res) => {
 
     let sql
     let valid = {}
-    let body = req.query
+    let body = req.body
     let result
 
     const params = [
@@ -269,7 +267,8 @@ router.get('/content_delete', async (req, res) => {
         await conn.beginTransaction()
 
         if (valid.params['report_type'] === 1) {
-            //o
+
+            // 관심사 댓글
             sql = `
                 DELETE
                     ic, icr
@@ -284,8 +283,24 @@ router.get('/content_delete', async (req, res) => {
             `
             await _db.execQry(conn, sql, valid.params)
 
+            //관심사 댓글의 대댓글
+            sql = `
+                DELETE
+                    ic, icr
+                FROM
+                    interest_comments ic
+                LEFT JOIN
+                    interest_comment_relations icr
+                ON
+                    ic.id = icr.ic_id
+                WHERE
+                    ic.parent = :content_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
         } else if (valid.params['report_type'] === 2) {
-            //o
+
+            // 관심사 게시물
             sql = `
                 DELETE
                     i, ik, ikr
@@ -304,6 +319,7 @@ router.get('/content_delete', async (req, res) => {
             `
             await _db.execQry(conn, sql, valid.params)
 
+            // 관심사 첨부 파일
             sql = `
                 DELETE FROM
                     interest_metas
@@ -312,6 +328,7 @@ router.get('/content_delete', async (req, res) => {
             `
             await _db.execQry(conn, sql, valid.params)
 
+            // 관심사 게시물의 댓글 및 좋아요
             sql = `
                 DELETE 
                     ic, icr
@@ -327,38 +344,137 @@ router.get('/content_delete', async (req, res) => {
             await _db.execQry(conn, sql, valid.params)
 
         } else if (valid.params['report_type'] === 3) {
-            //x
+
+            sql = `
+                SELECT 
+                    mail_com_id 
+                FROM 
+                    mail_comments_child
+                WHERE 
+                    id = :content_id
+            `
+            result = await _db.execQry(conn, sql, valid.params)
+
+            if (result.length < 1) {
+                await conn.rollback()
+                conn.release()
+                _out.print(res, _CONSTANT.EMPTY_DATA, null)
+                return
+            }
+
+            valid.params['mail_com_id'] = result[0]['mail_com_id']
+
+            //우편함 댓글 삭제
+            sql = `
+                DELETE 
+                    mc, mcc
+                FROM
+                    mail_comments mc
+                INNER JOIN
+                    mail_comments_child mcc
+                ON
+                    mc.id = mcc.mail_com_id
+                WHERE
+                    mc.id = :mail_com_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            // 우편함 대댓글 삭제
+            sql = `
+                DELETE 
+                    mc, mcc
+                FROM
+                    mail_comments mc
+                INNER JOIN
+                    mail_comments_child mcc
+                ON
+                    mc.id = mcc.mail_com_id
+                WHERE
+                    mcc.parent = :mail_com_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+        } else {
+
             sql = `
                 SELECT
-                    parent, contents
+                    mail_id
                 FROM
-                    mail_comments_child
+                    mail_child
                 WHERE
                     id = :content_id
             `
+            result = await _db.execQry(conn, sql, valid.params)
 
-        } else {
-            //x
+            if (result.length < 1) {
+                await conn.rollback()
+                conn.release()
+                _out.print(res, _CONSTANT.EMPTY_DATA, null)
+                return
+            }
+            valid.params['mail_id'] = result[0]['mail_id']
+
+
+            // 우편함 게시물 삭제
             sql = `
-                SELECT
-                    mc.title, mc.contents,
-                    (
-                        SELECT 
-                            GROUP_CONCAT(
-                                JSON_OBJECT(
-                                    "name", name, "value", value
-                                )
-                            ) 
-                        FROM 
-                            mail_metas 
-                        WHERE 
-                            mail_id = mc.mail_id
-                    ) AS media
+                DELETE
+                    m, mc
                 FROM
+                    mail m
+                INNER JOIN
                     mail_child mc
+                ON
+                    m.id = mc.mail_id
                 WHERE
-                    mc.id = :content_id
+                    m.id = :mail_id
             `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                DELETE
+                    mc, mcc
+                FROM
+                    mail_comments mc
+                INNER JOIN
+                    mail_comments_child mcc
+                ON
+                    mc.id = mcc.mail_com_id
+                WHERE
+                    mc.mail_id = :mail_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                DELETE FROM 
+                    mail_targets 
+                WHERE 
+                    mail_id = :mail_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                DELETE FROM 
+                    mail_relations 
+                WHERE 
+                    m_id = :mail_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                DELETE FROM 
+                    mail_metas 
+                WHERE 
+                    mail_id = :mail_id
+            `
+            await _db.execQry(conn, sql, valid.params)
+
+            sql = `
+                DELETE FROM 
+                    mail_pools 
+                WHERE 
+                    mail_id = :mail_id
+            `
+            await _db.execQry(conn, sql, valid.params)
 
         }
 
