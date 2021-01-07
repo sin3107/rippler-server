@@ -217,6 +217,13 @@ router.post('/sync', async (req, res) => {
             return
         }
 
+
+        /*let area = valid['params']['content_list'][0]['num'].substring(0, 5)
+
+        if(area === "+8210"){
+            valid['params']['content_list'][0]['num'] = "010"+valid['params']['content_list'][0]['num'].substring(5)
+        }*/
+
         values = `(:uid, '${valid['params']['content_list'][0]['name']}','${valid['params']['content_list'][0]['num']}')`
 
         for (let i = 1, e = valid['params']['content_list'].length; i < e; i++) {
