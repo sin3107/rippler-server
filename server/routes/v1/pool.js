@@ -7,9 +7,6 @@ router.get('/list', async (req, res) => {
     let valid = {}
     let result
 
-    let pool_list
-    let favorite_pool_list
-
     try {
         valid['uid'] = req.uinfo['u']
     } catch (e) {
@@ -36,59 +33,17 @@ router.get('/list', async (req, res) => {
                 pools ps
             WHERE
                 user_id = :uid
-            AND
-                favorite = 0
+            ORDER BY
+                favorite DESC
         `
+        result = await _db.qry(sql, valid)
 
-        pool_list = await _db.qry(sql, valid)
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
 
-    } catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
-    }
-
-
-    try {
-        sql = `
-            SELECT
-                id, 
-                name, 
-                thumbnail, 
-                favorite,
-                (
-                    SELECT
-                        COUNT(*)
-                    FROM
-                        pool_relations
-                    WHERE
-                        group_id = ps.id
-                ) as cnt
-            FROM
-                pools ps
-            WHERE
-                user_id = :uid
-            AND
-                favorite = 1
-        `
-
-        favorite_pool_list = await _db.qry(sql, valid)
-
-    } catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
-    }
-
-    if (favorite_pool_list.length < 1 && pool_list.length < 1) {
-        _out.print(res, _CONSTANT.EMPTY_DATA, null)
-        return
-    }
-
-    result = {
-        "pool_list": pool_list,
-        "favorite_pool_list": favorite_pool_list
-    }
-
-    try {
+        let out = {item : result}
 
         sql = `
             SELECT
@@ -98,16 +53,21 @@ router.get('/list', async (req, res) => {
             WHERE
                 user_id = :uid
         `
+        result = await _db.qry(sql, valid)
 
-        result['blind_cnt'] = await _db.qry(sql, valid)
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        out['blind_cnt'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
         return
     }
-
-
-    _out.print(res, null, result)
 
 })
 
