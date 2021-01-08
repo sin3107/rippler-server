@@ -43,29 +43,41 @@ response
     "message": "success",
     "code": 1000,
     "data": {
-        "pool_list": [
+        "item": [
             {
-                "id": 2,
-                "name": "2번",
+                "id": 3,
+                "name": "1",
+                "thumbnail": 1,
+                "favorite": 1,
+                "cnt": 0
+            },
+            {
+                "id": 4,
+                "name": "2",
+                "thumbnail": 2,
+                "favorite": 1,
+                "cnt": 0
+            },
+            
+            {
+                "id": 5,
+                "name": "3",
+                "thumbnail": 3,
+                "favorite": 0,
+                "cnt": 0
+            },
+            {
+                "id": 12,
+                "name": "내내",
                 "thumbnail": 2,
                 "favorite": 0,
                 "cnt": 3
-            }
+            },
+            
         ],
-        "favorite_pool_list": [
-            {
-                "id": 1,
-                "name": "1번",
-                "thumbnail": 1,
-                "favorite": 1,
-                "cnt": 4
-            }
-        ],
-        "blind_cnt": [
-            {
-                "cnt": 0
-            }
-        ]
+        "blind_cnt": 1,
+        "item_length": 4,
+        "total": 4
     }
 }
 ```
