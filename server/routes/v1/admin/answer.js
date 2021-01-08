@@ -101,8 +101,8 @@ router.get('/item', async(req, res) => {
 
     const params = [
         {key: 'id', type: 'num', required: true},
-        {key: 'p', type: 'num', required: true},
-        {key: 'l', type: 'num', max: 100, optional: true}
+        {key: 'page', type: 'num', required: true},
+        {key: 'limit', type: 'num', max: 100, optional: true}
     ]
 
     try{
@@ -116,6 +116,29 @@ router.get('/item', async(req, res) => {
 
         sql = `
             SELECT
+                id, user, value, create_by
+            FROM
+                question_relations
+            WHERE
+                question_id = :id
+            ORDER BY
+                create_by DESC
+            LIMIT
+                :page, :limit
+        `
+        result = await _db.qry(sql, valid.params)
+
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        let out = {item: result}
+
+
+        sql = `
+            SELECT
                 COUNT(*) as cnt
             FROM
                 question_relations
@@ -124,34 +147,14 @@ router.get('/item', async(req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        let out = {total : result[0]['cnt']}
-
+        out['total'] = result[0]['cnt']
+/*
         valid.params['p'] = out['total'] - ( valid.params['l'] * valid.params['p'] )
 
         if(valid.params['p'] < 1) {
             valid.params['p'] = 0
-        }
+        }*/
 
-        sql = `
-            SELECT
-                id, user, value, create_by
-            FROM
-                question_relations
-            WHERE
-                question_id = :id
-            ORDER BY
-                create_by
-            LIMIT
-                :p, :l
-        `
-        result = await _db.qry(sql, valid.params)
-
-        if(result.length < 1) {
-            _out.print(res, _CONSTANT.EMPTY_DATA, null)
-            return
-        }
-
-        out['item'] = result
 
         sql = `
             SELECT
