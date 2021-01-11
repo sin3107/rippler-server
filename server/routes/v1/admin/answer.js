@@ -270,7 +270,7 @@ router.post('/close', async (req, res) => {
 
         sql = `
             UPDATE
-                question
+                questions
             SET
                 close_yn = 1
             WHERE
