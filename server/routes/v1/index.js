@@ -42,13 +42,12 @@ router.get('/', async(req, res) => {
 router.use('/file', viewer)
 router.use('/file', video_viewer)
 router.use('/auth', auth)
-
-// auth check
-router.use(authCheck)
-
 // upload router
 router.use('/file', uploader)
 router.use('/file', video_uploader);
+
+// auth check
+router.use(authCheck)
 
 
 router.use('/user', user)

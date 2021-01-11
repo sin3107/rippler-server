@@ -5,8 +5,15 @@ const router = express.Router()
 router.get('/list', async (req, res) => {
 
     let sql
-    let valid = {uid: req.uinfo['u']}
+    let valid = {}
     let result
+
+    try {
+        valid['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
 
     try{
 
@@ -30,7 +37,8 @@ router.get('/list', async (req, res) => {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
-        const out = {item: result}
+
+        let out = {item : result}
 
         sql = `
             SELECT

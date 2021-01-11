@@ -66,7 +66,6 @@ router.get('/list', async (req, res) => {
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
     }
 
 })
