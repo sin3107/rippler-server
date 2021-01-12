@@ -31,7 +31,7 @@ router.post('/upload/video', (req, res) => {
             body.size = file.size;
             body.mime_type = file.mimetype;
 
-            body.path = file.destination.replace(process.env.VIDEO_PATH, "") + "/" + file.filename;
+            body.path = file.filename;
 
             result = await insertFile(body, 1)
 
