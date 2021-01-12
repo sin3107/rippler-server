@@ -31,7 +31,8 @@ router.get('/list', async (req, res) => {
         sql = `
             SELECT
                 r.id, r.reporter, r.suspect, r.reason, r.report_type, r.content_id, r.create_by,
-                re.name as reporter_name, su.name as suspect_name
+                re.name as reporter_name, re.num as reporter_number, su.name as suspect_name, su.num as suspect_number,
+                r.complete
             FROM
                 reports r
             INNER JOIN
@@ -46,7 +47,7 @@ router.get('/list', async (req, res) => {
                 1=1
                 ${valid.where}
             ORDER BY
-                create_by DESC
+                r.complete, r.create_by DESC
             LIMIT
                 :page, :limit
         `

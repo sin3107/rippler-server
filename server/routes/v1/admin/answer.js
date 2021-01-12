@@ -13,7 +13,9 @@ router.get('/list', async(req, res) => {
 
     const params = [
         {key: 'page', type: 'num', required: true},
-        {key: 'limit', type: 'num', max: 100, optional: true}
+        {key: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'num', value: 'u.num', type: 'str', optional: true, where: true, like: true},
+        {key: 'close', value: 'q.close_yn', type: 'num', optional: true, where: true, like: true}
     ]
 
     try{
@@ -30,6 +32,7 @@ router.get('/list', async(req, res) => {
                 q.id, 
                 q.user_id, 
                 u.name,
+                u.num,
                 (
                     SELECT
                         JSON_OBJECT("chk", user, "message", value, "create_by", create_by)
@@ -41,6 +44,7 @@ router.get('/list', async(req, res) => {
                         create_by DESC
                     LIMIT 1
                 ) AS last_message,
+                q.close_yn,
                 q.create_by
             FROM
                 questions q
@@ -49,9 +53,10 @@ router.get('/list', async(req, res) => {
             ON
                 q.user_id = u.id
             WHERE
-                q.close_yn = 0
+                1=1
+                ${valid.where}
             ORDER BY
-                q.create_by DESC
+                q.close_yn, q.create_by DESC
             LIMIT
                 :page, :limit
         `
@@ -74,14 +79,15 @@ router.get('/list', async(req, res) => {
             ON
                 q.user_id = u.id
             WHERE
-                close_yn = 0
+                1=1
+                ${valid.where}
         `
-        result = await _db.qry(sql, null)
+
+        result = await _db.qry(sql, valid.params)
 
         out['total'] = result[0]['cnt']
 
         _util.toJson(out['item'], 'last_message')
-
         _out.print(res, null, out)
 
     }catch (e) {
@@ -148,13 +154,6 @@ router.get('/item', async(req, res) => {
         result = await _db.qry(sql, valid.params)
 
         out['total'] = result[0]['cnt']
-/*
-        valid.params['p'] = out['total'] - ( valid.params['l'] * valid.params['p'] )
-
-        if(valid.params['p'] < 1) {
-            valid.params['p'] = 0
-        }*/
-
 
         sql = `
             SELECT
