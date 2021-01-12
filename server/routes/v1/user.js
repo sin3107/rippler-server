@@ -634,7 +634,6 @@ router.get('/authorized_pool', async(req, res) => {
             name_list[i] = {id: c, name : first_name[a] + last_name[b]}
         }
 
-
         sql = `
             SELECT 
                 id,
@@ -652,7 +651,9 @@ router.get('/authorized_pool', async(req, res) => {
         result = await _db.qry(sql, valid)
 
         if(result.length > 0) {
-            _out.print(res, null, result)
+
+            name_list[6] = result[0]
+            _out.print(res, null, name_list)
             return
         }
 
@@ -675,7 +676,11 @@ router.get('/authorized_pool', async(req, res) => {
             return
         }
 
-        _out.print(res, null ,result)
+        name_list[6] = result[0]
+
+        _out.print(res, null, name_list)
+
+
 
     }catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
