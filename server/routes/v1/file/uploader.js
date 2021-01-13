@@ -57,6 +57,8 @@ router.post('/upload/image', async(req, res) => {
     let result
     const path = await createDir()
 
+
+    console.log(req.uinfo)
     try {
         const uploadInfo = await uploadFile(req, path)
         const fids = []
@@ -68,6 +70,7 @@ router.post('/upload/image', async(req, res) => {
 
         for ( let i=0, e=uploadInfo['files'].length; i<e; ++i ) {
             let _f = uploadInfo['files'][i]
+
             sql = 'INSERT INTO file (uuid, size, name, path, user_id, mime_type) VALUES (:uuid, :size, :name, :path, :uid, :mt)'
             sql_params = {
                 uuid: uuidv4()

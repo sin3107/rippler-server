@@ -6,6 +6,7 @@ const users = require( `${__base}/routes/v1/admin/users` )
 const reports = require( `${__base}/routes/v1/admin/reports` )
 const answer = require( `${__base}/routes/v1/admin/answer` )
 const notice = require( `${__base}/routes/v1/admin/notice` )
+const graph = require( `${__base}/routes/v1/admin/graph` )
 
 router.use(async(req, res, next) => {
     if (!_util.hasK(req, 'uinfo') || !_util.hasK(req.uinfo, 'a') || req.uinfo['a'] !== parseInt(process.env.LEVEL_ADMIN) ) {
@@ -25,5 +26,6 @@ router.use('/users', users)
 router.use('/reports', reports)
 router.use('/answer', answer)
 router.use('/notice', notice)
+router.use('/graph', graph)
 
 module.exports = router
