@@ -19,7 +19,7 @@ router.post('/signin', async (req, res) => {
 
     try {
         _util.valid(body, params, valid)
-
+        // 여기임
         valid.params['enc_password'] = _util.encryptSha256(valid.params['password'])
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
@@ -93,6 +93,7 @@ router.post('/signup', async (req, res) => {
 
     try {
         _util.valid(body, params, valid)
+        // 여기임
         valid.params['enc_password'] = _util.encryptSha256(valid.params['password'])
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
@@ -376,6 +377,7 @@ router.post('/pass_change', async (req, res) => {
 
     try {
         _util.valid(body, params, valid)
+        // 여기임
         valid.params['enc_password'] = _util.encryptSha256(valid.params['password'])
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)

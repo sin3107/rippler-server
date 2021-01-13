@@ -158,6 +158,7 @@ router.post('/pass_chk', async (req, res) => {
     try {
         _util.valid(body, params, valid)
         valid.params['uid'] = req.uinfo['u']
+        // 여기임
         valid.params['enc_password'] = _util.encryptSha256(valid.params['password'])
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
@@ -469,8 +470,6 @@ router.get('/authorized', async (req, res) => {
         const plain_text = util.format(process.env.KEY_FORMAT, req.uinfo['u'], req.uinfo['u']-1, result[0]['id'], result[0]['name'])
         out['value'] = _util.encryptSha256(plain_text)
 
-        console.log('a')
-
         _out.print(res, null, out)
 
     } catch (e) {
@@ -621,7 +620,6 @@ router.get('/authorized_pool', async (req, res) => {
 
 
 router.post('/check_pool', async (req, res) => {
-
 
     let valid = {}
     let body = req.body

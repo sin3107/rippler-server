@@ -33,9 +33,6 @@ router.post('/upload/video', (req, res) => {
 
             body.path = file.destination.replace(process.env.VIDEO_PATH, "") + "/" + file.filename;
 
-            console.log(file.destination.replace(process.env.VIDEO_PATH, ""))
-            console.log(file.filename)
-
             result = await insertFile(body, 1)
 
             if (result.length < 1) {

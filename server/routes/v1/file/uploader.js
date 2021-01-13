@@ -57,8 +57,6 @@ router.post('/upload/image', async(req, res) => {
     let result
     const path = await createDir()
 
-
-    console.log(req.uinfo)
     try {
         const uploadInfo = await uploadFile(req, path)
         const fids = []
