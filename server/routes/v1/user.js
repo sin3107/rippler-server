@@ -464,7 +464,12 @@ router.get('/authorized', async (req, res) => {
 
         name_list[6] = result[0]
 
-        _out.print(res, null, name_list)
+        let out = {item : name_list}
+
+        const plain_text = util.format(process.env.KEY_FORMAT, req.uinfo['u'], req.uinfo['u']-1, result[0]['id'], result[0]['name'])
+        out['value'] = _util.encryptSha256(plain_text)
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -474,14 +479,13 @@ router.get('/authorized', async (req, res) => {
 
 router.post('/check', async (req, res) => {
 
-    let sql
     let valid = {}
     let body = req.body
-    let result
 
     const params = [
         {key: 'id', type: 'num', required: true},
-        {key: 'name', type: 'str', required: true}
+        {key: 'name', type: 'str', required: true},
+        {key: 'value', type: 'str', required: true}
     ]
 
     try {
@@ -494,21 +498,10 @@ router.post('/check', async (req, res) => {
 
     try {
 
-        sql = `
-            SELECT
-                COUNT(*) as cnt
-            FROM
-                whitelist
-            WHERE
-                user_id = :uid
-            AND
-                friend_id = :id
-            AND
-                name = :name
-        `
-        result = await _db.qry(sql, valid.params)
+        const plain_text = util.format(process.env.KEY_FORMAT, req.uinfo['u'], req.uinfo['u']-1, valid.params['id'], valid.params['name'])
+        let value = _util.encryptSha256(plain_text)
 
-        if (result[0]['cnt'] < 1) {
+        if (value !== valid.params['value']) {
             _out.print(res, null, [false])
             return
         }
