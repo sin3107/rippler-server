@@ -4,7 +4,7 @@
 
 ## list
 
-알림 목록 호출
+알림 설정 목록 호출
 
 GET /api/v1/notification/list HTTP  
 HOST: rippler.chaeft.com
@@ -65,7 +65,7 @@ response
 
 알림 설정 수정
 
-GET /api/v1/notification/update
+POST /api/v1/notification/update
 HOST: rippler.chaeft.com    
 Content-Type: application/json;charset=utf-8    
 token: token
@@ -105,6 +105,209 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/notification/update' \
 -d '{
     "mail_feed_count" : 1,
     "mail_comment" : 0
+}'
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            true
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```
+
+
+
+## mail_list
+
+우편함 알림 목록 호출
+
+GET /api/v1/notification/mail HTTP  
+HOST: rippler.chaeft.com
+token : token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 우편함 알림 목록 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/notification/mail' \
+-H 'token: token' \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "id": 24,
+                "detail_type": 3,
+                "user_id": 4,
+                "thumbnail": 1,
+                "post_id": 23,
+                "comment_id": null,
+                "contents": "444님이 회원님의 게시물에 좋아요 하였습니다.",
+                "create_by": "2020-12-24 16:21:26",
+                "pages": 1
+            },
+            {
+                "id": 22,
+                "detail_type": 4,
+                "user_id": 4,
+                "thumbnail": 1,
+                "post_id": 23,
+                "comment_id": 132,
+                "contents": "ㄹㅇㅋㅋ",
+                "create_by": "2020-12-24 16:00:41",
+                "pages": 1
+            }
+        ],
+        "item_length": 2,
+        "total": 2
+    }
+}
+```
+
+
+
+## interest_list
+
+관심사 알림 목록 호출
+
+GET /api/v1/notification/interest HTTP  
+HOST: rippler.chaeft.com
+token : token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 관심사 알림 목록 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/notification/interest' \
+-H 'token: token' \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "id": 24,
+                "detail_type": 3,
+                "user_id": 4,
+                "thumbnail": 1,
+                "post_id": 23,
+                "comment_id": null,
+                "contents": "444님이 회원님의 게시물에 좋아요 하였습니다.",
+                "create_by": "2020-12-24 16:21:26",
+                "pages": 2
+            },
+            {
+                "id": 22,
+                "detail_type": 4,
+                "user_id": 4,
+                "thumbnail": 1,
+                "post_id": 23,
+                "comment_id": 132,
+                "contents": "ㄹㅇㅋㅋ",
+                "create_by": "2020-12-24 16:00:41",
+                "pages": 2
+            }
+        ],
+        "item_length": 2,
+        "total": 2
+    }
+}
+```
+
+
+
+## Delete
+
+알림 삭제
+
+POST /api/v1/notification/delete
+HOST: rippler.chaeft.com    
+Content-Type: application/json;charset=utf-8    
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|id|Int| 알림 id |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 알림 삭제
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/notification/delete' \
+-H 'Content-Type: application/json;charset=utf-8' 'token: token' \
+-d '{
+    "id" : 23
 }'
 ```
 

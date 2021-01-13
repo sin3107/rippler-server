@@ -28,7 +28,6 @@ const notice = require( `${__base}/routes/v1/notice` )
 const notification = require( `${__base}/routes/v1/notification` )
 const question = require( `${__base}/routes/v1/question` )
 
-const notify = require( `${__base}/routes/v1/notify` )
 const admin = require( `${__base}/routes/v1/admin`)
 
 router.get('/', async(req, res) => {
@@ -67,7 +66,6 @@ router.use('/notice', notice)
 router.use('/notification', notification)
 router.use('/question', question)
 
-router.use('/notify', notify)
 router.use('/admin', admin)
 
 module.exports = router
