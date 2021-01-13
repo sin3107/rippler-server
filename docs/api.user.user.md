@@ -447,7 +447,8 @@ response
             {id: 1, name: "asd"},
             {id: 1, name: "asd"},
             {id: 1, name: "asd"}
-        ]
+        ],
+        "value" : "884a4eece38ce5c0ad67dfa41df7ad479332c5dc126c464d954970a745a19bfb",
         "item_length": 1,
         "total": 1,
     }
@@ -471,6 +472,7 @@ token: token
 |:---:|:---:|:---:|:---:|
 |id|Int| 친구 id |o|
 |name|String| 친구 이름 |o|
+|value|String|암호화 비교 값|o|
 
 ### response
 
@@ -493,7 +495,8 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/check' \
 -H 'Content-Type: application/json;charset=utf-8' 'token': token \
 -d `{
     "id" : 3,
-    "name" : "asd
+    "name" : "asd",
+    "value" : "884a4eece38ce5c0ad67dfa41df7ad479332c5dc126c464d954970a745a19bfb"
 }
 `
 ```
@@ -566,6 +569,7 @@ response
             {id: 1, name: "asd"},
             {id: 1, name: "asd"}
         ]
+        "value" : "884a4eece38ce5c0ad67dfa41df7ad479332c5dc126c464d954970a745a19bfb",
         "item_length": 1,
         "total": 1,
     }
@@ -589,6 +593,7 @@ token: token
 |:---:|:---:|:---:|:---:|
 |id|Int| 풀 id |o|
 |name|String| 풀 이름 |o|
+|value|String|암호화 비교 값|o|
 
 ### response
 
@@ -611,7 +616,8 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/check_pool' \
 -H 'Content-Type: application/json;charset=utf-8' 'token': token \
 -d `{
     "id" : 3,
-    "name" : "asd
+    "name" : "asd",
+    "value" : "884a4eece38ce5c0ad67dfa41df7ad479332c5dc126c464d954970a745a19bfb"
 }
 `
 ```
