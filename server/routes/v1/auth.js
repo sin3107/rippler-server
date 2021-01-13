@@ -150,6 +150,19 @@ router.post('/signup', async (req, res) => {
         `
         await _db.execQry(conn, sql, valid.params)
 
+
+        sql = `
+            INSERT INTO 
+                user_statistics(
+                    count
+                )
+            VALUES(
+                    1
+                )
+            ON DUPLICATE KEY UPDATE count = count + 1 
+        `
+        await _db.execQry(conn, sql, valid.params)
+
         await conn.commit()
         conn.release()
 

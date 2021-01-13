@@ -333,7 +333,7 @@ router.post('/update', async (req, res) => {
                 _out.print(res, _CONSTANT.NOT_CHANGED, null)
                 return
             }
-            _out.print(res, null, [result.changedRows])
+            _out.print(res, null, [true])
             return
 
         } catch (e) {
