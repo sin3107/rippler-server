@@ -47,11 +47,6 @@ notify.prototype.notiAdminMessage = async function (user_id, num) {
 
         const fcm_token = result[0]['fcm_token']
 
-        if (!fcm_token) {
-            return
-        }
-
-
         let msg = notiMsg(num, null)
 
         sql = `
@@ -59,18 +54,29 @@ notify.prototype.notiAdminMessage = async function (user_id, num) {
                 messages(
                     pages, 
                     detail_type,
+                    user_id,
                     friend_id, 
+                    post_id,
+                    comment_id,
                     contents
                 )
             VALUES
                 (
                     0,
                     :num,
+                    0,
                     :user_id,
+                    0,
+                    0,
                     '${msg}'
                 )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp, del = 0
         `
         await _db.qry(sql, sql_params)
+
+        if (!fcm_token) {
+            return
+        }
 
         const push_data = {
             title: "rippler",
@@ -96,7 +102,7 @@ notify.prototype.notiKeyword = async function (post_id, profile_id) {
 
         sql = `
             SELECT 
-                u.device_token as fcm_token
+                u.id as fri_id, u.device_token as fcm_token
             FROM 
                 interest i
             INNER JOIN
@@ -113,10 +119,7 @@ notify.prototype.notiKeyword = async function (post_id, profile_id) {
         }
 
         const fcm_token = result[0]['fcm_token']
-
-        if (!fcm_token) {
-            return
-        }
+        const fri_id = result[0]['fri_id']
 
         sql = `
             SELECT
@@ -140,10 +143,9 @@ notify.prototype.notiKeyword = async function (post_id, profile_id) {
             return
         }
 
-
         sql = `
             SELECT
-                nickname
+                user_id as my_id, nickname
             FROM
                 user_profiles
             WHERE
@@ -152,6 +154,12 @@ notify.prototype.notiKeyword = async function (post_id, profile_id) {
         result = await _db.qry(sql, null)
 
         if (result.length < 1) {
+            return
+        }
+
+        const my_id = result[0]['my_id']
+
+        if(my_id === fri_id){
             return
         }
 
@@ -180,9 +188,13 @@ notify.prototype.notiKeyword = async function (post_id, profile_id) {
                     :post_id,
                     '${msg}'
                 )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp, del = 0
         `
         await _db.qry(sql, sql_params)
 
+        if (!fcm_token) {
+            return
+        }
 
         const push_data = {
             title: "rippler",
@@ -204,13 +216,11 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
     let sql_params = {comment_id: comment_id, profile_id: profile_id}
     let result
 
-
-
     try {
 
         sql = `
             SELECT 
-                u.device_token as fcm_token
+                id as fri_id, u.device_token as fcm_token
             FROM 
                 interest_comments ic
             INNER JOIN
@@ -227,10 +237,7 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
         }
 
         const fcm_token = result[0]['fcm_token']
-
-        if (!fcm_token) {
-            return
-        }
+        const fri_id = result[0]['fri_id']
 
         sql = `
             SELECT
@@ -256,7 +263,7 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
 
         sql = `
             SELECT
-                nickname
+                user_id as my_id, nickname
             FROM
                 user_profiles
             WHERE
@@ -265,6 +272,12 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
         result = await _db.qry(sql, null)
 
         if (result.length < 1) {
+            return
+        }
+
+        const my_id = result[0]['my_id']
+
+        if(my_id === fri_id){
             return
         }
 
@@ -296,9 +309,13 @@ notify.prototype.notiInterestComment = async function (comment_id, profile_id) {
                     :comment_id,
                     '${msg}'
                 )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp, del = 0
         `
         await _db.qry(sql, sql_params)
 
+        if (!fcm_token) {
+            return
+        }
 
         const push_data = {
             title: "rippler",
@@ -328,7 +345,7 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
         if (detail_type === 8) {
             sql = `
                 SELECT 
-                    u.device_token as fcm_token
+                    id as fri_id, u.device_token as fcm_token
                 FROM 
                     interest_comments ic
                 INNER JOIN
@@ -341,7 +358,7 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
         } else {
             sql = `
                 SELECT 
-                    u.device_token as fcm_token
+                    id as fri_id, u.device_token as fcm_token
                 FROM 
                     interest i
                 INNER JOIN
@@ -360,11 +377,7 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
         }
 
         const fcm_token = result[0]['fcm_token']
-
-        if (!fcm_token) {
-            return
-        }
-
+        const fri_id = result[0]['fri_id']
 
         //대댓글일 때
         if (detail_type === 8) {
@@ -407,7 +420,7 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
 
         sql = `
             SELECT
-                nickname
+                user_id as my_id, nickname
             FROM
                 user_profiles
             WHERE
@@ -416,6 +429,12 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
         result = await _db.qry(sql, null)
 
         if (result.length < 1) {
+            return
+        }
+
+        const my_id = result[0]['my_id']
+
+        if(my_id === fri_id){
             return
         }
 
@@ -446,9 +465,13 @@ notify.prototype.notiInterestInsCom = async function (comment_id, detail_type, p
                     :comment_id,
                     :contents
                 )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp, del = 0
         `
         await _db.qry(sql, sql_params)
 
+        if (!fcm_token) {
+            return
+        }
 
         const push_data = {
             title: "rippler",
@@ -506,9 +529,10 @@ notify.prototype.notiMailInsCom = async function (comment_id, detail_type, param
         }
 
         sql_params['user_id'] = result[0]['id']
+
         const fcm_token = result[0]['fcm_token']
 
-        if (!fcm_token) {
+        if(sql_params['uid'] === sql_params['user_id']){
             return
         }
 
@@ -596,9 +620,13 @@ notify.prototype.notiMailInsCom = async function (comment_id, detail_type, param
                     ),
                     :contents
                 )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp, del = 0
         `
         await _db.qry(sql, sql_params)
 
+        if (!fcm_token) {
+            return
+        }
 
         const push_data = {
             title: "rippler",
@@ -643,10 +671,9 @@ notify.prototype.notiMailLike = async function (params) {
 
         const fcm_token = result[0]['fcm_token']
 
-        if (!fcm_token) {
+        if(sql_params['uid'] === sql_params['user_id']){
             return
         }
-
 
         sql = `
             SELECT
@@ -729,9 +756,13 @@ notify.prototype.notiMailLike = async function (params) {
                     (SELECT id FROM mail_child WHERE friend_id = :user_id AND mail_id = :mail_id),
                     '${msg}'
                 )
+            ON DUPLICATE KEY UPDATE create_by = current_timestamp, del = 0
         `
         await _db.qry(sql, sql_params)
 
+        if (!fcm_token) {
+            return
+        }
 
         const push_data = {
             title: "rippler",
@@ -781,7 +812,6 @@ notify.prototype.notiMailFeed = async function (mail_id, insert_list, uid) {
                     id = :uid
             `
             result = await _db.qry(sql, sql_params)
-
             nickname = result[0]['name']
         } else {
             sql_params['uid'] = 0
@@ -811,11 +841,6 @@ notify.prototype.notiMailFeed = async function (mail_id, insert_list, uid) {
 
             const fcm_token = result[0]['fcm_token']
 
-            if (!fcm_token) {
-                return
-            }
-
-
             sql = `
                 INSERT INTO
                     messages(
@@ -837,9 +862,13 @@ notify.prototype.notiMailFeed = async function (mail_id, insert_list, uid) {
                         (SELECT id FROM mail_child WHERE friend_id = :user_id AND mail_id = :mail_id),
                         '${msg}'
                     )
+                ON DUPLICATE KEY UPDATE create_by = current_timestamp, del = 0
             `
             await _db.qry(sql, sql_params)
 
+            if (!fcm_token) {
+                return
+            }
 
             const push_data = {
                 title: "rippler",

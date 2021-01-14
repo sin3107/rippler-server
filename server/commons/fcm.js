@@ -67,7 +67,6 @@ fcm.prototype.send = function(token, data) {
             const response = await this.fcmAdmin.messaging().send(msg)
             resolve(response)
         } catch (e) {
-            console.log(e)
             reject(e)
         }
 
