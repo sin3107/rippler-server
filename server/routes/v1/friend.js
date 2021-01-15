@@ -288,7 +288,7 @@ router.post('/sync', async (req, res) => {
         result = await _db.qry(sql, valid.params)
 
         if (result.affectedRows < 1) {
-            _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
+            _out.print(res, _CONSTANT.SUCCESS, [true])
             return
         }
 
@@ -387,7 +387,7 @@ router.post('/add', async (req, res) => {
         result = await _db.qry(sql, valid)
 
         if (result.length < 1) {
-            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            _out.print(res, _CONSTANT.SUCCESS, null)
             return
         }
 
