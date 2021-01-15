@@ -486,8 +486,8 @@ router.post('/settings', async (req, res) => {
     let result
 
     const params = [
-        {key: 'blind', type: 'num', optional: true, update: true},
-        {key: 'auto', type: 'num', optional: true, update: true}
+        {key: 'blind', value: 'blind', type: 'num', optional: true, update: true},
+        {key: 'auto', value: 'auto', type: 'num', optional: true, update: true}
     ]
 
     try{
