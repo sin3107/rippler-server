@@ -387,7 +387,7 @@ router.post('/add', async (req, res) => {
         result = await _db.qry(sql, valid)
 
         if (result.length < 1) {
-            _out.print(res, _CONSTANT.SUCCESS, null)
+            _out.print(res, _CONSTANT.SUCCESS, [true])
             return
         }
 
