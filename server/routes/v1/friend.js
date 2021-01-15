@@ -9,7 +9,9 @@ router.get('/list', async (req, res) => {
     let result
 
     let friend
+    let friend_total
     let favorite
+    let favorite_total
 
     try {
         valid['uid'] = req.uinfo['u']
@@ -18,20 +20,33 @@ router.get('/list', async (req, res) => {
         return
     }
 
+    const conn = await _db.getConn()
+
     try {
+        await conn.beginTransaction()
 
         sql = `
             SELECT
                 u.id, 
                 u.name as friend_name, 
-                CASE WHEN wl.name IS NULL THEN u.name ELSE wl.name END AS nickname,
+                CASE 
+                    WHEN wl.name IS NULL 
+                        THEN 
+                            u.name 
+                        ELSE 
+                            wl.name 
+                    END AS nickname,
                 CASE 
                     WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0 
-                        THEN NULL
-                    WHEN bl.user_id IS NULL 
-                        THEN u.thumbnail 
-                    ELSE bl.thumbnail 
-                END AS thumbnail,
+                        THEN 
+                            NULL
+                        WHEN 
+                            bl.user_id IS NULL 
+                        THEN 
+                            u.thumbnail 
+                        ELSE 
+                            bl.thumbnail 
+                    END AS thumbnail,
                 CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
                 wl.favorite
             FROM
@@ -43,38 +58,56 @@ router.get('/list', async (req, res) => {
             LEFT JOIN
                 blacklist bl
             ON
-                bl.user_id = wl.friend_id
+                bl.user_id = u.id
             WHERE
                 wl.user_id = :uid
+            AND
+                u.id != :uid
+            AND
+                wl.favorite = 0
         `
+        friend = await _db.execQry(conn, sql, valid)
 
-        friend = await _db.qry(sql, valid)
+/*        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                whitelist
+            WHERE
+                user_id = :uid
+            AND
+                friend_id != :uid
+            AND
+                favorite = 0
+        `
+        result = await _db.execQry(conn, sql, valid)
 
-        if (friend.length < 1) {
-            _out.print(res, _CONSTANT.EMPTY_DATA, null)
-            return
-        }
+        friend_total = result[0]['cnt']*/
 
-    } catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
-    }
-
-    try {
 
         sql = `
             SELECT
                 u.id, 
                 u.name as friend_name, 
-                wl.name as nickname, 
+                CASE 
+                    WHEN wl.name IS NULL 
+                        THEN 
+                            u.name 
+                        ELSE 
+                            wl.name 
+                    END AS nickname,
                 CASE 
                     WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0 
-                        THEN NULL
-                    WHEN bl.user_id IS NULL 
-                        THEN u.thumbnail 
-                    ELSE bl.thumbnail 
-                END AS thumbnail,
-                u.status_msg,
+                        THEN 
+                            NULL
+                        WHEN 
+                            bl.user_id IS NULL 
+                        THEN 
+                            u.thumbnail 
+                        ELSE 
+                            bl.thumbnail 
+                    END AS thumbnail,
+                CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
                 wl.favorite
             FROM
                 whitelist wl
@@ -82,26 +115,45 @@ router.get('/list', async (req, res) => {
                 users u
             ON
                 wl.friend_id = u.id
-            INNER JOIN
+            LEFT JOIN
                 blacklist bl
             ON
-                u.id = bl.user_id
+                bl.user_id = u.id
             WHERE
                 wl.user_id = :uid
             AND
+                u.id != :uid
+            AND
                 wl.favorite = 1
         `
+        favorite = await _db.execQry(conn, sql, valid)
+/*
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                whitelist
+            WHERE
+                user_id = :uid
+            AND
+                friend_id != :uid
+            AND
+                favorite = 1
+        `
+        result = await _db.execQry(conn, sql, valid)
 
-        favorite = await _db.qry(sql, valid)
+        favorite_total = result[0]['cnt']*/
+
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
         return
     }
 
+
     result = {
-        "friend": friend,
-        "favorite": favorite
+        "friend" : friend,
+        "favorite" : favorite
     }
 
     _out.print(res, null, result)
@@ -150,7 +202,7 @@ router.get('/item', async (req, res) => {
                 users u
             ON
                 wl.friend_id = u.id
-            INNER JOIN
+            LEFT JOIN
                 blacklist bl
             ON
                 u.id = bl.user_id
