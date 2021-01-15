@@ -288,7 +288,7 @@ router.post('/sync', async (req, res) => {
         result = await _db.qry(sql, valid.params)
 
         if (result.affectedRows < 1) {
-            _out.print(res, _CONSTANT.SUCCESS, [true])
+            _out.print(res, _CONSTANT.SUCCESS, [0])
             return
         }
 
