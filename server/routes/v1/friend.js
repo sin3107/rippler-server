@@ -63,8 +63,6 @@ router.get('/list', async (req, res) => {
                 wl.user_id = :uid
             AND
                 u.id != :uid
-            AND
-                wl.favorite = 0
         `
         friend = await _db.execQry(conn, sql, valid)
 
@@ -85,7 +83,7 @@ router.get('/list', async (req, res) => {
         friend_total = result[0]['cnt']*/
 
 
-        sql = `
+        /*sql = `
             SELECT
                 u.id, 
                 u.name as friend_name, 
@@ -126,7 +124,7 @@ router.get('/list', async (req, res) => {
             AND
                 wl.favorite = 1
         `
-        favorite = await _db.execQry(conn, sql, valid)
+        favorite = await _db.execQry(conn, sql, valid)*/
 /*
         sql = `
             SELECT
@@ -152,8 +150,7 @@ router.get('/list', async (req, res) => {
 
 
     result = {
-        "friend" : friend,
-        "favorite" : favorite
+        "friend" : friend
     }
 
     _out.print(res, null, result)
