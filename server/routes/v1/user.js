@@ -774,6 +774,86 @@ router.post('/phone_update', async (req, res) => {
 })
 
 
+router.get('/reason_list', async(req, res) => {
+
+    let sql
+    let result
+
+    try{
+        sql = `
+            SELECT
+                id, value
+            FROM
+                common_code
+            WHERE    
+                name = "secession"
+        `
+        result = await _db.qry(sql, null)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
+router.post('/reason_secession', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.body
+    let result
+
+    const params = [
+        {key: 'detail_type', type: 'num', required: true},
+        {key: 'reason', type: 'str', optional: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.print(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+
+        let insert = ''
+        let insert_value = ''
+        if(valid.params['reason']){
+            insert = ', reason'
+            insert_value = ', :reason'
+        }
+
+        sql = `
+            INSERT INTO
+                secession(
+                    num, detail_type${insert}
+                )
+            VALUES
+                (
+                    (SELECT num FROM users WHERE id = :uid), :detail_type${insert_value}
+                )
+        `
+        await _db.qry(sql, valid.params)
+
+        _out.print(res, null, [true])
+
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
 router.post('/secession', async (req, res) => {
 
     let sql

@@ -517,7 +517,6 @@ response
 
 
 
-
 ## authorized pool
 
 인증 풀 호출
@@ -682,6 +681,136 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/phone_update' \
     num : "01011112222"
 }
 `
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [true]
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
+
+
+## reason list
+
+탈퇴 사유 호출
+
+GET /api/v1/user/reason_list HTTP  
+HOST: rippler.chaeft.com
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 탈퇴 사유 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/user/reason_list' \
+-H 'token': token \
+`
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "id": 9,
+                "value": "잠시 쉬고싶어요."
+            },
+            {
+                "id": 10,
+                "value": "알림이 너무 자주 옵니다."
+            },
+            {
+                "id": 11,
+                "value": "사용상의 불편함이 있어요."
+            },
+            {
+                "id": 12,
+                "value": "친구와 싸워서 쓸 일이 없어졌어요."
+            },
+            {
+                "id": 13,
+                "value": "기타"
+            }
+        ],
+        "item_length": 5,
+        "total": 5
+    }
+}
+```
+
+
+
+## reason secession
+
+탈퇴 사유 입력
+
+POST /api/v1/user/reason_secession HTTP  
+HOST: rippler.chaeft.com
+Content-Type: application/json;charset=utf-8  
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|detail_type| Int | 사유 |o|
+|reason| String | 기타 사유 |x|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 탈퇴사유 입력
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/reason_secession' \
+-H 'Content-Type: application/json;charset=utf-8' 'token': token \
+-d `{
+    detail_type : 13,
+    reason : 'abcdabcd'
+}
 ```
 
 response  
