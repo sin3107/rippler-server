@@ -774,94 +774,41 @@ router.post('/phone_update', async (req, res) => {
 })
 
 
-router.get('/reason_list', async(req, res) => {
+
+router.post('/secession', async (req, res) => {
 
     let sql
-    let result
-
-    try{
-        sql = `
-            SELECT
-                id, value
-            FROM
-                common_code
-            WHERE    
-                name = "secession"
-        `
-        result = await _db.qry(sql, null)
-
-        if(result.length < 1) {
-            _out.print(res, _CONSTANT.EMPTY_DATA, null)
-            return
-        }
-
-        _out.print(res, null, result)
-
-    }catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-    }
-
-})
-
-
-router.post('/reason_secession', async(req, res) => {
-
-    let sql
-    let valid = {}
     let body = req.body
-    let result
+    let valid = {}
 
     const params = [
-        {key: 'detail_type', type: 'num', required: true},
-        {key: 'reason', type: 'str', optional: true}
+        {key: 'reason', type: 'str', required: true}
     ]
 
     try{
         _util.valid(body, params, valid)
         valid.params['uid'] = req.uinfo['u']
     }catch (e) {
-        _out.print(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
-
-    try{
-
-        let insert = ''
-        let insert_value = ''
-        if(valid.params['reason']){
-            insert = ', reason'
-            insert_value = ', :reason'
-        }
-
-        sql = `
-            INSERT INTO
-                secession(
-                    num, detail_type${insert}
-                )
-            VALUES
-                (
-                    (SELECT num FROM users WHERE id = :uid), :detail_type${insert_value}
-                )
-        `
-        await _db.qry(sql, valid.params)
-
-        _out.print(res, null, [true])
-
-    }catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-    }
-
-})
-
-
-router.post('/secession', async (req, res) => {
-
-    let sql
-    let valid = {uid: req.uinfo['u']}
 
     const conn = await _db.getConn()
     try {
         await conn.beginTransaction()
+
+        sql = `
+            INSERT INTO
+                secession(
+                    num, reason
+                )
+            VALUES
+                (
+                    (SELECT num FROM users WHERE id = :uid), :reason
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
 
         sql = `
             DELETE FROM 
@@ -871,7 +818,7 @@ router.post('/secession', async (req, res) => {
             OR 
                 friend_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -880,7 +827,7 @@ router.post('/secession', async (req, res) => {
             WHERE 
                 user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -895,7 +842,7 @@ router.post('/secession', async (req, res) => {
             WHERE 
                 A.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -904,7 +851,7 @@ router.post('/secession', async (req, res) => {
             WHERE 
                 user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -917,7 +864,7 @@ router.post('/secession', async (req, res) => {
             WHERE 
                 A.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -950,13 +897,13 @@ router.post('/secession', async (req, res) => {
             WHERE 
                 A.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
             DELETE FROM mail_targets WHERE friend_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -973,19 +920,19 @@ router.post('/secession', async (req, res) => {
             WHERE 
                 friend_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
             DELETE FROM notifications WHERE user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
             DELETE FROM num_books WHERE user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -994,13 +941,13 @@ router.post('/secession', async (req, res) => {
             ON A.id = B.group_id
             WHERE A.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
             DELETE FROM pool_relations WHERE friend_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -1008,14 +955,14 @@ router.post('/secession', async (req, res) => {
             LEFT JOIN question_relations B ON A.id = B.question_id
             WHERE A.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
             DELETE FROM reports
             WHERE reporter = :uid OR suspect = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -1024,7 +971,7 @@ router.post('/secession', async (req, res) => {
             SET COUNT = COUNT - 1
             WHERE A.USER_ID = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -1032,14 +979,14 @@ router.post('/secession', async (req, res) => {
             INNER JOIN interest_comment_relations B ON A.id = b.ic_id
             WHERE A.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
             DELETE FROM interest_comment_relations
             WHERE user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
@@ -1051,41 +998,41 @@ router.post('/secession', async (req, res) => {
             LEFT JOIN interest_comment_relations F ON E.id = F.ic_id
             WHERE A.user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
 
         sql = `
             DELETE FROM interest_comments
             WHERE user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
         sql = `
             DELETE A, B FROM users A
             LEFT JOIN sms_authorized B ON A.num = B.num
             WHERE A.id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
         sql = `
             DELETE FROM user_keywords WHERE user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
         sql = `
             DELETE FROM user_profiles WHERE user_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
         sql = `
             DELETE FROM user_relations WHERE user_id = :uid OR friend_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
         sql = `
             DELETE FROM whitelist WHERE user_id = :uid OR friend_id = :uid
         `
-        await _db.execQry(conn, sql, valid)
+        await _db.execQry(conn, sql, valid.params)
 
         await conn.commit()
         conn.release()
