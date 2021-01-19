@@ -434,8 +434,6 @@ router.get('/main', async (req, res) => {
                 i.profile_id = up.id
             WHERE
                 i.profile_id = :profile_id
-            AND
-                up.user_id = :uid
         `
 
         result = await _db.qry(sql, valid.params)
