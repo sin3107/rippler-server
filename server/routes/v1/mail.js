@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const Notify = require( `${__base}/commons/notify` )
+const Notify = require(`${__base}/commons/notify`)
 
 
 router.get('/list', async (req, res) => {
@@ -265,7 +265,7 @@ router.post('/insert_feed', async (req, res) => {
                     :uid, 0, :mail_type
                 )
         `
-        if(valid.params['share']){
+        if (valid.params['share']) {
             sql = `
             INSERT INTO 
                 mail (
@@ -278,6 +278,7 @@ router.post('/insert_feed', async (req, res) => {
                 )
         `
         }
+
         result = await _db.execQry(conn, sql, valid.params)
 
         valid['params']['mail_id'] = result.insertId
@@ -302,6 +303,7 @@ router.post('/insert_feed', async (req, res) => {
             await _db.execQry(conn, sql, valid.params)
         }
 
+
         target_values = `(:mail_id, ${valid['params']['friend_list'][0]})`
 
         child_values = `
@@ -311,6 +313,7 @@ router.post('/insert_feed', async (req, res) => {
         user_relation = `(:uid, ${valid['params']['friend_list'][0]})`
 
         await _db.execQry(conn, sql, valid.params)
+
 
         for (let i = 1, e = valid['params']['friend_list'].length; i < e; i++) {
             target_values += `,(:mail_id, ${valid['params']['friend_list'][i]})`
@@ -346,21 +349,22 @@ router.post('/insert_feed', async (req, res) => {
         `
         await _db.execQry(conn, sql, valid.params)
 
-        values = `(:mail_id, ${valid['params']['pool_list'][0]['group_id']}, ${valid['params']['pool_list'][0]['count']})`
-        for (let i = 1, e = valid['params']['pool_list'].length; i < e; i++) {
-            values += `, (:mail_id, ${valid['params']['pool_list'][i]['group_id']}, ${valid['params']['pool_list'][i]['count']})`
+        if (valid.params['pool_list']) {
+            values = `(:mail_id, ${valid['params']['pool_list'][0]['group_id']}, ${valid['params']['pool_list'][0]['count']})`
+            for (let i = 1, e = valid['params']['pool_list'].length; i < e; i++) {
+                values += `, (:mail_id, ${valid['params']['pool_list'][i]['group_id']}, ${valid['params']['pool_list'][i]['count']})`
+            }
+
+            sql = `
+                INSERT INTO
+                    mail_pools(
+                        mail_id, group_id, count
+                    )
+                VALUES
+                    ${values}
+            `
+            await _db.execQry(conn, sql, valid.params)
         }
-
-        sql = `
-            INSERT INTO
-                mail_pools(
-                    mail_id, group_id, count
-                )
-            VALUES
-                ${values}
-        `
-        await _db.execQry(conn, sql, valid.params)
-
 
         const notify = new Notify()
         notify.notiMailFeed(valid.params['mail_id'], valid.params['friend_list'], valid.params['uid'])
@@ -901,12 +905,12 @@ router.post('/like', async (req, res) => {
         await _db.execQry(conn, sql, valid.params)
 
         // 알림 영역 시작
-        
+
         const notify = new Notify()
         notify.notiMailLike(valid.params)
-        
+
         // 알림 영역 끝
-        
+
         await conn.commit()
         conn.release()
 
@@ -1296,13 +1300,13 @@ router.post('/insert_comment', async (req, res) => {
         `
         await _db.execQry(conn, sql, null)
 
-        if(valid.params['parent'] < 1){
+        if (valid.params['parent'] < 1) {
             sql = `
                 INSERT ignore INTO
                     user_relations(user_id, friend_id)
                 VALUES(:uid, (SELECT user_id FROM mail WHERE id = :mail_id))
             `
-        }else {
+        } else {
             sql = `
                 INSERT ignore INTO
                     user_relations(user_id, friend_id)
@@ -1313,7 +1317,7 @@ router.post('/insert_comment', async (req, res) => {
         await _db.execQry(conn, sql, valid.params)
 
         // 알림 영역 시작
-        if(result[0]['cnt'] > 0){
+        if (result[0]['cnt'] > 0) {
 
             let detail = 5
             if (valid.params['parent'] < 1) {
@@ -1500,7 +1504,6 @@ router.post('/update_comment', async (req, res) => {
 })
 
 
-
 router.post('/delete_comment', async (req, res) => {
 
     let sql
@@ -1538,7 +1541,7 @@ router.post('/delete_comment', async (req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        if(result.affectedRows < 1) {
+        if (result.affectedRows < 1) {
             _out.print(res, _CONSTANT.ERROR_500, null)
             return
         }
