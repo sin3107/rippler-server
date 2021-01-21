@@ -49,7 +49,7 @@ router.post('/edit', async (req, res) => {
 
     try{
         _util.valid(body, params, valid)
-        valid.params['uid'] = req.body['u']
+        valid.params['uid'] = req.uinfo['u']
     }catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
