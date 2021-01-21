@@ -92,6 +92,7 @@ router.get('/main', async (req, res) => {
         sql = `
             SELECT 
                 A.id AS mail_id,
+                A.mail_type,
                 B.id AS mail_child_id,
                 (
                     SELECT 
@@ -157,6 +158,7 @@ router.get('/share_feed', async (req, res) => {
         sql = `
             SELECT 
                 A.id AS mail_id,
+                A.mail_type,
                 B.id AS mail_child_id,
                 A.share AS interest_id,
                 (
