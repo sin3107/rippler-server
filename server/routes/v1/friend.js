@@ -6,6 +6,7 @@ router.get('/list', async (req, res) => {
 
     let sql
     let valid = {}
+    let body = req.query
     let result
 
     let friend
@@ -13,18 +14,23 @@ router.get('/list', async (req, res) => {
     let favorite
     let favorite_total
 
+    const params = [
+        {key: "name", value: 'u.name', type: 'str', optional: true, where: true, like: true}
+    ]
+
     try {
-        valid['uid'] = req.uinfo['u']
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
-    const conn = await _db.getConn()
-
     try {
-        await conn.beginTransaction()
-
+        let value = ``
+        if (valid.params['name']) {
+            value = ` OR wl.name LIKE CONCAT('%', :name, '%')`
+        }
         sql = `
             SELECT
                 u.id, 
@@ -63,24 +69,31 @@ router.get('/list', async (req, res) => {
                 wl.user_id = :uid
             AND
                 u.id != :uid
+            ${valid.where}
+            ${value}
         `
-        friend = await _db.execQry(conn, sql, valid)
+        friend = await _db.qry(sql, valid.params)
 
-/*        sql = `
-            SELECT
-                COUNT(*) as cnt
-            FROM
-                whitelist
-            WHERE
-                user_id = :uid
-            AND
-                friend_id != :uid
-            AND
-                favorite = 0
-        `
-        result = await _db.execQry(conn, sql, valid)
+        if (friend.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
 
-        friend_total = result[0]['cnt']*/
+        /*        sql = `
+                    SELECT
+                        COUNT(*) as cnt
+                    FROM
+                        whitelist
+                    WHERE
+                        user_id = :uid
+                    AND
+                        friend_id != :uid
+                    AND
+                        favorite = 0
+                `
+                result = await _db.execQry(conn, sql, valid)
+
+                friend_total = result[0]['cnt']*/
 
 
         /*sql = `
@@ -125,35 +138,33 @@ router.get('/list', async (req, res) => {
                 wl.favorite = 1
         `
         favorite = await _db.execQry(conn, sql, valid)*/
-/*
-        sql = `
-            SELECT
-                COUNT(*) as cnt
-            FROM
-                whitelist
-            WHERE
-                user_id = :uid
-            AND
-                friend_id != :uid
-            AND
-                favorite = 1
-        `
-        result = await _db.execQry(conn, sql, valid)
+        /*
+                sql = `
+                    SELECT
+                        COUNT(*) as cnt
+                    FROM
+                        whitelist
+                    WHERE
+                        user_id = :uid
+                    AND
+                        friend_id != :uid
+                    AND
+                        favorite = 1
+                `
+                result = await _db.execQry(conn, sql, valid)
 
-        favorite_total = result[0]['cnt']*/
+                favorite_total = result[0]['cnt']*/
 
+
+        result = {
+            "friend": friend
+        }
+
+        _out.print(res, null, result)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
     }
-
-
-    result = {
-        "friend" : friend
-    }
-
-    _out.print(res, null, result)
 
 })
 
@@ -300,7 +311,6 @@ router.post('/sync', async (req, res) => {
 
 
 })
-
 
 
 router.post('/add', async (req, res) => {
@@ -477,7 +487,6 @@ router.post('/add', async (req, res) => {
 })
 
 
-
 router.post('/settings', async (req, res) => {
 
     let sql
@@ -490,15 +499,15 @@ router.post('/settings', async (req, res) => {
         {key: 'auto', value: 'auto', type: 'num', optional: true, update: true}
     ]
 
-    try{
+    try {
         _util.valid(body, params, valid)
         valid.params['uid'] = req.uinfo['u']
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
     }
 
-    try{
+    try {
 
         sql = `
             UPDATE
@@ -510,20 +519,19 @@ router.post('/settings', async (req, res) => {
         `
         result = await _db.qry(sql, valid.params)
 
-        if(result.changedRows < 1){
+        if (result.changedRows < 1) {
             _out.print(res, _CONSTANT.NOT_CHANGED, null)
             return
         }
 
         _out.print(res, null, [true])
 
-    }catch (e) {
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 
 })
-
 
 
 router.post('/nickname_edit', async (req, res) => {
@@ -617,7 +625,6 @@ router.post('/favorite', async (req, res) => {
     }
 
 })
-
 
 
 router.post('/blind', async (req, res) => {

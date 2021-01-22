@@ -26,6 +26,8 @@ const report = require( `${__base}/routes/v1/report` )
 const notice = require( `${__base}/routes/v1/notice` )
 const notification = require( `${__base}/routes/v1/notification` )
 const question = require( `${__base}/routes/v1/question` )
+const tutorial = require( `${__base}/routes/v1/tutorial` )
+
 
 const admin = require( `${__base}/routes/v1/admin`)
 
@@ -64,6 +66,7 @@ router.use('/report', report)
 router.use('/notice', notice)
 router.use('/notification', notification)
 router.use('/question', question)
+router.use('/tutorial', tutorial)
 
 router.use('/admin', admin)
 

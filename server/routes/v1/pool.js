@@ -5,10 +5,16 @@ router.get('/list', async (req, res) => {
 
     let sql
     let valid = {}
+    let body = req.query
     let result
 
+    const params = [
+        {key: "name", value: 'name', type: 'str', optional: true, where: true, like: true}
+    ]
+
     try {
-        valid['uid'] = req.uinfo['u']
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
@@ -33,10 +39,11 @@ router.get('/list', async (req, res) => {
                 pools ps
             WHERE
                 user_id = :uid
+            ${valid.where}
             ORDER BY
                 favorite DESC
         `
-        result = await _db.qry(sql, valid)
+        result = await _db.qry(sql, valid.params)
 
         if(result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
@@ -53,7 +60,7 @@ router.get('/list', async (req, res) => {
             WHERE
                 user_id = :uid
         `
-        result = await _db.qry(sql, valid)
+        result = await _db.qry(sql, valid.params)
 
         if(result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)

@@ -14,6 +14,8 @@ token : token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
+|name|String|친구 이름 검색어|x|
+
 
 ### response
 
@@ -64,16 +66,6 @@ response
                     "id": 3,
                     "friend_name": "333",
                     "set_nickname": null,
-                    "thumbnail": null,
-                    "status_msg": null,
-                    "favorite": 1
-                }
-            ],
-            "favorite": [
-                {
-                    "id": 3,
-                    "friend_name": "333",
-                    "nickname": null,
                     "thumbnail": null,
                     "status_msg": null,
                     "favorite": 1

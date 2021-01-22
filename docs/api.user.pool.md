@@ -14,6 +14,7 @@ token : token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
+|name|String|풀 이름 검색어|x|
 
 ### response
 
@@ -73,7 +74,6 @@ response
                 "favorite": 0,
                 "cnt": 3
             },
-            
         ],
         "blind_cnt": 1,
         "item_length": 4,

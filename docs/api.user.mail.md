@@ -509,8 +509,8 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/mail/target_update' \
 -d '{
     "mail_id" : 80
     "pool_list":[
-            {"count":1,"pool_id":53},
-            {"count":3,"pool_id":52}
+            {"count":1,"group_id":53},
+            {"count":3,"group_id":52}
     ],
     "insert_list": [12]
 }'
