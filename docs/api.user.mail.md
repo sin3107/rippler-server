@@ -16,6 +16,7 @@ token : token
 |:---:|:---:|:---:|:---:|
 |page|Int| 현재 페이지 숫자 |o|
 |limit|Int| 한 페이지에 보여줄 갯수 |x|
+|friend_id|Int| 친구에게 받은 글 검색시 사용 |x|
 
 ### response
 
@@ -70,10 +71,6 @@ response
                     {
                         "name": "video",
                         "value": 5
-                    },
-                    {
-                        "name": "pools",
-                        "value": 1
                     }
                 ]
             },
@@ -101,10 +98,6 @@ response
                     {
                         "name": "video",
                         "value": 5
-                    },
-                    {
-                        "name": "pools",
-                        "value": 1
                     }
                 ]
             },
@@ -184,10 +177,6 @@ response
                     {
                         "name": "video",
                         "value": 5
-                    },
-                    {
-                        "name": "pools",
-                        "value": 1
                     }
                 ]
             }

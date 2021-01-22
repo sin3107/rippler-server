@@ -6,10 +6,18 @@ router.get('/list', async (req, res) => {
 
     let sql
     let valid = {}
+    let body = req.query
     let result
 
+    const params = [
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'page', value: 'page', type: 'num', required: true},
+        {key: 'name', value: 'u.name', type: 'str', optional: true, where: true, like: true}
+    ]
+
     try {
-        valid['uid'] = req.uinfo['u']
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
     } catch (e) {
         _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
         return
@@ -29,9 +37,10 @@ router.get('/list', async (req, res) => {
                 u.id = bl.friend_id
             WHERE
                 bl.user_id = :uid
+            ${valid.where}
         `
 
-        result = await _db.qry(sql, valid)
+        result = await _db.qry(sql, valid.params)
 
         if(result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
@@ -44,11 +53,16 @@ router.get('/list', async (req, res) => {
             SELECT
                 COUNT(*) as cnt
             FROM
-                blacklist
+                blacklist bl
+            INNER JOIN
+                users u
+            ON
+                u.id = bl.friend_id
             WHERE
-                user_id = :uid
+                bl.user_id = :uid
+            ${valid.where}
         `
-        result = await _db.qry(sql, valid)
+        result = await _db.qry(sql, valid.params)
 
         out['total'] = result[0]['cnt']
 

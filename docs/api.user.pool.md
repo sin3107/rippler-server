@@ -412,3 +412,83 @@ response
     }
 }
 ```
+
+
+
+# sent list
+해당 풀에 보낸 게시물 목록
+
+GET /api/v1/pool/sent_list HTTP  
+HOST: rippler.chaeft.com    
+token : token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+|page|Int| 현재 페이지 숫자 |o|
+|limit|Int| 한 페이지에 보여줄 갯수 |x|
+|id|Int| 해당 풀 id |o|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 해당 풀에 보낸 게시물 목록 호출
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/pool/sent_list?id=9&page=1' \
+-H 'token: token' \
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [
+            {
+                "id": 42,
+                "mail_id": 32,
+                "mail_type": 1, //게시물 타입 (0:text short, 1:text long, 2:image, 3:video)
+                "user_id": 5,
+                "name": "555",
+                "thumbnail": 5,
+                "title": "세에~",
+                "contents": "세에에에에에",
+                "share": null // 공유한 게시물의 경우 해당 id를 가지고 interest/item 호출
+                "count": 0,
+                "anonymous": 0,
+                "my_post": 0,
+                "me": 0,
+                "create_by": "2020-12-18 17:04:29",
+                "update_by": "2020-12-22 16:57:13",
+                "medias": [
+                    {
+                        "name": "image",
+                        "value": 1
+                    },
+                    {
+                        "name": "video",
+                        "value": 5
+                    }
+                ]
+            },
+        ],
+        "item_length": 1,
+        "total": 1
+    }
+}
+```

@@ -14,6 +14,9 @@ token : token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
+|page|Int| 현재 페이지 숫자 |o|
+|limit|Int| 한 페이지에 보여줄 갯수 |x|
+|name|String| 친구 이름 |x|
 
 ### response
 
@@ -31,8 +34,8 @@ token : token
 
 request  
 ```bash
-# 회원 정보 호출
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/blind/list' \
+# 블라인드 풀 유저 목록
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/blind/list?page=1' \
 -H 'token: token' \
 ```
 

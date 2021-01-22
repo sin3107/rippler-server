@@ -12,7 +12,8 @@ router.get('/list', async (req, res) => {
 
     const params = [
         {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
-        {key: 'page', value: 'page', type: 'num', required: true}
+        {key: 'page', value: 'page', type: 'num', required: true},
+        {key: 'friend_id', value: 'm.user_id', type: 'num', optional: true, where: true, eq: true}
     ]
 
     try {
@@ -79,6 +80,7 @@ router.get('/list', async (req, res) => {
                 bl.user_id = u.id
             WHERE
                 mc.friend_id = :uid
+            ${valid.where}
             LIMIT
                 :page, :limit
         `
@@ -110,6 +112,7 @@ router.get('/list', async (req, res) => {
                 bl.user_id = u.id
             WHERE
                 mc.friend_id = :uid
+            ${valid.where}
         `
         result = await _db.qry(sql, valid.params)
 

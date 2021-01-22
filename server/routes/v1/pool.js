@@ -487,5 +487,130 @@ router.post('/delete', async (req, res) => {
 })
 
 
+router.get('/sent_list', async(req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    const params = [
+        {key: 'id', type: 'num', required: true},
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true},
+        {key: 'page', value: 'page', type: 'num', required: true}
+    ]
+
+    try{
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    }catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try{
+        sql = `
+            SELECT
+                mc.id,
+                mc.mail_id,
+                m.mail_type,
+                m.user_id,
+                u.name,
+                u.thumbnail,
+                mc.title,
+                mc.contents,
+                m.share,
+                m.count,
+                mc.anonymous,
+                CASE WHEN mc.friend_id = u.id THEN 1 ELSE 0 END AS my_post,
+                (SELECT COUNT(*) AS cnt FROM mail_relations mr WHERE m_id = mc.mail_id AND user_id = :uid) as me,
+                m.create_by,
+                mc.update_by,
+                (
+                    SELECT 
+                        CONCAT('[', 
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "name", name, 
+                                    "value", value 
+                                )
+                            ),
+                        ']') 
+                    FROM 
+                        mail_metas 
+                    WHERE 
+                        mail_id = m.id
+                ) as medias
+            FROM
+                mail_pools mp
+            INNER JOIN
+                mail m
+            ON
+                m.id = mp.mail_id
+            INNER JOIN
+                mail_child mc
+            ON
+                mc.mail_id = m.id
+            AND
+                mc.friend_id = m.user_id
+            INNER JOIN
+                users u
+            ON
+                u.id = m.user_id
+            WHERE
+                mp.group_id = :id
+            AND
+                m.user_id = :uid
+            LIMIT
+                :page, :limit
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        let out = {item : result}
+        _util.toJson(out['item'], 'medias')
+
+
+        sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                mail_pools mp
+            INNER JOIN
+                mail m
+            ON
+                m.id = mp.mail_id
+            INNER JOIN
+                mail_child mc
+            ON
+                mc.mail_id = m.id
+            AND
+                mc.friend_id = m.user_id
+            INNER JOIN
+                users u
+            ON
+                u.id = m.user_id
+            WHERE
+                mp.group_id = :id
+            AND
+                m.user_id = :uid
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+
+        _out.print(res, null, out)
+        
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+})
+
+
 
 module.exports = router
