@@ -78,6 +78,8 @@ router.get('/list', async (req, res) => {
                 blacklist bl
             ON
                 bl.user_id = u.id
+            AND
+                bl.friend_id = :uid
             WHERE
                 mc.friend_id = :uid
             ${valid.where}
@@ -110,6 +112,8 @@ router.get('/list', async (req, res) => {
                 blacklist bl
             ON
                 bl.user_id = u.id
+            AND
+                bl.friend_id = :uid
             WHERE
                 mc.friend_id = :uid
             ${valid.where}
@@ -202,6 +206,8 @@ router.get('/item', async (req, res) => {
                 blacklist bl
             ON
                 bl.user_id = u.id
+            AND
+                bl.friend_id = :uid
             WHERE
                 mc.friend_id = :uid
             AND
