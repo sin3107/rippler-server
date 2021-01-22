@@ -817,7 +817,7 @@ router.post('/target_update', async (req, res) => {
 
             values = `(:mail_id, ${valid.params['pool_list'][0]['pool_id']}, ${valid.params['pool_list'][0]['count']})`
             for (let i = 1, e = valid.params['pool_list'].length; i < e; i++) {
-                values = `, (:mail_id, ${valid.params['pool_list'][i]['pool_id']}, ${valid.params['pool_list'][i]['count']})`
+                values += `, (:mail_id, ${valid.params['pool_list'][i]['pool_id']}, ${valid.params['pool_list'][i]['count']})`
             }
 
             sql = `

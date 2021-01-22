@@ -507,9 +507,12 @@ request
 curl -X POST --url 'http://rippler.chaeft.com/api/v1/mail/target_update' \
 -H 'Content-Type: application/json;charset=utf-8' 'token: token' \
 -d '{
-    "mail_id" : 43
-    "title": "밥"
-    "contents": "바밥",
+    "mail_id" : 80
+    "pool_list":[
+            {"count":1,"pool_id":53},
+            {"count":3,"pool_id":52}
+    ],
+    "insert_list": [12]
 }'
 ```
 
