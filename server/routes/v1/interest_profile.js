@@ -177,6 +177,38 @@ router.post('/add', async (req, res) => {
 
     try {
         sql = `
+            SELECT
+                COUNT(*) as cnt
+            FROM
+                user_profiles
+            WHERE
+                user_id = :uid
+        `
+        result = await _db.qry(sql, valid.params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        if(result[0]['cnt'] > 2) {
+            _out.print(res, null, [false])
+            return
+        }
+
+        if(valid.params['profile_type'] === 1){
+            sql = `
+                UPDATE
+                    user_profiles
+                SET
+                    profile_type = 0
+                WHERE
+                    user_id = :uid
+            `
+            result = await _db.qry(sql, valid.params)
+        }
+
+        sql = `
             INSERT INTO
                 user_profiles(
                     ${insert}

@@ -637,6 +637,75 @@ response
 
 
 
+
+## count_authorized
+
+인증 실패 카운트
+
+POST /api/v1/user/count_authorized HTTP  
+HOST: rippler.chaeft.com
+Content-Type: application/json;charset=utf-8  
+token: token
+
+### request
+
+|name|type|desc|required|
+|:---:|:---:|:---:|:---:|
+
+### response
+
+|name|type|desc|
+|:---:|:---:|:---:|
+|success|boolean|api 성공 여부|
+|message|String|api 리턴 메시지|
+|code|int|api 리턴 코드|
+|data|Object|api 반환 객체|
+|data.item|array|성공시 반환 배열, 실패시 빈 배열|
+|data.item_length|int| data.item 의 갯수 |
+|data.total|int| 총 갯수 |
+
+### sample
+
+request  
+```bash
+# 인증 실패 카운트 
+curl -X POST --url 'http://rippler.chaeft.com/api/v1/user/count_authorized' \
+-H 'Content-Type: application/json;charset=utf-8' 'token': token \
+`
+```
+
+response  
+```bash
+{
+    "success": true,
+    "message": "success",
+    "code": 1000,
+    "data": {
+        "item": [3] // 현재 실패 횟수
+        "item_length": 1,
+        "total": 1,
+    }
+}
+
+
+5회 실패 시
+{
+    "success": true,
+    "message": "authorized failed"
+    "code": 2006,
+    "data": {
+        "item": [5] // 현재 실패 횟수
+        "item_length": 1,
+        "total": 1,
+    }
+}
+```
+
+
+
+
+
+
 ## phone update
 
 휴대폰 정보 수정
