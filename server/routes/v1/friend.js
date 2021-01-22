@@ -487,6 +487,37 @@ router.post('/add', async (req, res) => {
 })
 
 
+router.get('/setting_state', async (req, res) => {
+
+    let sql
+    let sql_params = {uid: req.uinfo['u']}
+    let result
+
+    try{
+        sql = `
+            SELECT
+                auto, blind
+            FROM
+                users
+            WHERE
+                id = :uid
+        `
+        result = await _db.qry(sql, sql_params)
+
+        if(result.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
+
+        _out.print(res, null, result)
+        
+    }catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})
+
+
 router.post('/settings', async (req, res) => {
 
     let sql
@@ -529,7 +560,6 @@ router.post('/settings', async (req, res) => {
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
-
 
 })
 
