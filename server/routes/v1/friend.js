@@ -29,7 +29,7 @@ router.get('/list', async (req, res) => {
     try {
         let value = ``
         if (valid.params['name']) {
-            value = ` OR wl.name LIKE CONCAT('%', :name, '%')`
+            value = `AND (u.name LIKE CONCAT('%', :name, '%') OR wl.name LIKE CONCAT('%', :name, '%'))`
         }
         sql = `
             SELECT
@@ -69,7 +69,6 @@ router.get('/list', async (req, res) => {
                 wl.user_id = :uid
             AND
                 u.id != :uid
-            ${valid.where}
             ${value}
         `
         friend = await _db.qry(sql, valid.params)

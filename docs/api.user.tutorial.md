@@ -68,7 +68,7 @@ token: token
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
 |step|Int| 현재 단계 |o (단계는 임의로 설정)|
-
+예) 0 : 진행 전, 1 : 메인 튜토리얼 완료, 2 : 선택 튜토리얼 완료, 3 : 선택 튜토리얼 하지않음
 ### response
 
 |name|type|desc|
