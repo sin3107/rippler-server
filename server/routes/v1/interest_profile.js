@@ -99,7 +99,7 @@ router.post('/edit', async (req, res) => {
 
     const params = [
         {key: 'id', value: 'id', type: 'num', required: true, where: true, eq: true},
-        {key: 'name', value: 'name', type: 'str', optional: true, update: true},
+        {key: 'nickname', value: 'nickname', type: 'str', optional: true, update: true},
         {key: 'thumbnail', value: 'thumbnail', type: 'num', optional: true, update: true},
         {key: 'status_msg', value: 'status_msg', type: 'str', optional: true, update: true}
     ]

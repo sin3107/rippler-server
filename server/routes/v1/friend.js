@@ -10,9 +10,9 @@ router.get('/list', async (req, res) => {
     let result
 
     let friend
-    let friend_total
+    /*let friend_total
     let favorite
-    let favorite_total
+    let favorite_total*/
 
     const params = [
         {key: "name", value: 'u.name', type: 'str', optional: true, where: true, like: true}
