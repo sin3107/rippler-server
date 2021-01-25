@@ -121,7 +121,7 @@ router.post('/user_setting', async (req, res) => {
                 valid['params']['kid'] = valid['params']['insert_list'][i]
 
                 sql = `
-                    INSERT INTO
+                    INSERT ignore INTO
                         user_keywords(
                             user_id, keyword_id
                         )
@@ -159,7 +159,7 @@ router.post('/user_setting', async (req, res) => {
         await conn.rollback()
         conn.release()
 
-        _out.err(res, _CONSTANT.EMPTY_DATA, e.toString(), null)
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
 })
