@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const Notify = require( `${__base}/commons/notify` )
+const Notify = require(`${__base}/commons/notify`)
 
 router.get('/list', async (req, res) => {
 
@@ -556,23 +556,21 @@ router.post('/insert_feed', async (req, res) => {
 
         valid['params']['post_id'] = result.insertId
 
-        values = `(:post_id, ${valid['params']['media'][0]['type']}, '${valid['params']['media'][0]['id']}')`
+        values = `(:post_id, '${valid['params']['media'][0]['type']}', '${valid['params']['media'][0]['id']}')`
 
-        if (valid['param']['media']) {
+        if (valid['params']['media']) {
             for (let i = 1, e = valid['params']['media'].length; i < e; i++) {
-
-                values += `,(:post_id, ${valid['params']['media'][i]['type']}, '${valid['params']['media'][i]['id']}')`
-
-                sql = `
-                    INSERT INTO 
-                        interest_metas(
-                            post_id, name, value
-                        )
-                    VALUES 
-                        ${values}
-                `
-                await _db.execQry(conn, sql, valid.params)
+                values += `,(:post_id, '${valid['params']['media'][i]['type']}', '${valid['params']['media'][i]['id']}')`
             }
+            sql = `
+                INSERT INTO 
+                    interest_metas(
+                        post_id, name, value
+                    )
+                VALUES 
+                    ${values}
+            `
+            await _db.execQry(conn, sql, valid.params)
         }
 
         for (let i = 0, e = valid.params['keyword_list'].length; i < e; i++) {
@@ -1068,7 +1066,6 @@ router.post('/insert_comment', async (req, res) => {
 
         const notify = new Notify()
         notify.notiInterestInsCom(result.insertId, detail, valid.params)
-
 
 
         // 알림 영역 끝
