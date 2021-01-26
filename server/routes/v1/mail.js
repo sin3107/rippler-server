@@ -266,6 +266,7 @@ router.post('/insert_feed', async (req, res) => {
 
     try {
         await conn.beginTransaction()
+
         sql = `
             INSERT INTO 
                 mail (
@@ -285,7 +286,6 @@ router.post('/insert_feed', async (req, res) => {
             VALUES 
                 (
                     :uid, 0, :share, :mail_type
-                    
                 )
         `
         }
@@ -311,6 +311,7 @@ router.post('/insert_feed', async (req, res) => {
                     ${values}
                 `
 
+            console.log('abc')
             await _db.execQry(conn, sql, valid.params)
         }
 
@@ -322,8 +323,6 @@ router.post('/insert_feed', async (req, res) => {
             ( :mail_id, ${valid['params']['friend_list'][0]}, :title, :contents, :anonymous )
         `
         user_relation = `(:uid, ${valid['params']['friend_list'][0]})`
-
-        await _db.execQry(conn, sql, valid.params)
 
 
         for (let i = 1, e = valid['params']['friend_list'].length; i < e; i++) {
