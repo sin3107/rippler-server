@@ -134,6 +134,18 @@ router.post('/signup', async (req, res) => {
 
         sql = `
             INSERT INTO
+                user_relations(
+                    user_id, friend_id
+                )
+            VALUES
+                (
+                    :id, :id
+                )
+        `
+        await _db.execQry(conn, sql, valid.params)
+
+        sql = `
+            INSERT INTO
                 notifications(
                     user_id,
                     mail_feed_count,
