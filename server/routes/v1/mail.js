@@ -83,6 +83,8 @@ router.get('/list', async (req, res) => {
             WHERE
                 mc.friend_id = :uid
             ${valid.where}
+            ORDER BY
+                create_by DESC
             LIMIT
                 :page, :limit
         `
