@@ -311,7 +311,6 @@ router.post('/insert_feed', async (req, res) => {
                     ${values}
                 `
 
-            console.log('abc')
             await _db.execQry(conn, sql, valid.params)
         }
 

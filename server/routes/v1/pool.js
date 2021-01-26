@@ -23,25 +23,76 @@ router.get('/list', async (req, res) => {
     try {
         sql = `
             SELECT
-                id, 
-                name, 
-                thumbnail, 
-                favorite,
+                ps.id, 
+                ps.name, 
+                ps.thumbnail, 
+                ps.favorite,
                 (
                     SELECT
                         COUNT(*)
                     FROM
-                        pool_relations
+                        pool_relations pr
+                    INNER JOIN
+                        users u
+                    ON
+                        pr.friend_id = u.id
+                    INNER JOIN
+                        whitelist wl
+                    ON
+                        wl.friend_id = pr.friend_id
+                    LEFT JOIN
+                        blacklist bl
+                    ON
+                        bl.user_id = wl.friend_id
                     WHERE
                         group_id = ps.id
-                ) as cnt
+                    AND
+                        wl.user_id = ps.user_id
+                ) as cnt,
+                (
+                    SELECT
+                        CONCAT('[' ,
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                "id", u.id,
+                                "name", u.name,
+                                "thumbnail", CASE 
+                                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = wl.friend_id AND friend_id = :uid) = 0 
+                                        THEN NULL
+                                    WHEN bl.user_id IS NULL 
+                                        THEN u.thumbnail 
+                                    ELSE bl.thumbnail 
+                                END,
+                                "status_msg", CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END
+                                )
+                            )
+                        , ']')
+                    FROM
+                        pool_relations pr
+                    INNER JOIN
+                        users u
+                    ON
+                        pr.friend_id = u.id
+                    INNER JOIN
+                        whitelist wl
+                    ON
+                        wl.friend_id = pr.friend_id
+                    LEFT JOIN
+                        blacklist bl
+                    ON
+                        bl.user_id = wl.friend_id
+                    WHERE
+                        group_id = ps.id
+                    AND
+                        wl.user_id = ps.user_id
+                ) as friend_list
             FROM
                 pools ps
             WHERE
-                user_id = :uid
+                ps.user_id = :uid
             ${valid.where}
             ORDER BY
-                favorite DESC
+                ps.favorite DESC
         `
         result = await _db.qry(sql, valid.params)
 
@@ -68,6 +119,8 @@ router.get('/list', async (req, res) => {
         }
 
         out['blind_cnt'] = result[0]['cnt']
+
+        _util.toJson(out['item'], 'friend_list')
 
         _out.print(res, null, out)
 
