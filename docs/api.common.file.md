@@ -120,7 +120,7 @@ response
 
 영상 파일 업로드 api
 
-POST /api/v1/file/video/upload
+POST /api/v1/file/upload/video
 Content-type: multipart/form-data  
 
 ### request
@@ -147,7 +147,7 @@ Content-type: multipart/form-data
 request  
 ```bash
 # 단일 파일 업로드
-curl -vvv --url 'http://rippler.chaeft.com/api/v1/file/video/upload' \
+curl -vvv --url 'http://rippler.chaeft.com/api/v1/file/upload/video' \
 -H 'token: token' \
 -F 'video=10m.mp4'
 
