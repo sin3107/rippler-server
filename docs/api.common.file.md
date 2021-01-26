@@ -149,7 +149,7 @@ request
 # 단일 파일 업로드
 curl -vvv --url 'http://rippler.chaeft.com/api/v1/file/video/upload' \
 -H 'token: token' \
--F 'file=10m.mp4'
+-F 'video=10m.mp4'
 
 ```
 
