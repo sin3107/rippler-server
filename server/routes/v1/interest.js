@@ -102,9 +102,11 @@ router.get('/list', async (req, res) => {
                         CONCAT('[', 
                             GROUP_CONCAT(
                                 JSON_OBJECT(
-                                    'id', k2.id, 
+                                    'id', ik2.id, 
+                                    'keyword_id', ik2.keyword_id,
                                     'name', k2.keyword_name, 
-                                    'cnt', ik2.count
+                                    'cnt', ik2.count,
+                                    'me', cast((SELECT COUNT(*) FROM interest_keyword_relations WHERE ik_id = ik2.id AND user_id = :uid) as unsigned)
                                 )
                             ),']'
                         ) 
@@ -311,7 +313,8 @@ router.get('/search_result', async (req, res) => {
                                     'id', ik1.id,
                                     'keyword_id', ik1.keyword_id,
                                     'name', k1.keyword_name,
-                                    'cnt', ik1.count
+                                    'cnt', ik1.count,
+                                    'me', cast((SELECT COUNT(*) FROM interest_keyword_relations WHERE ik_id = ik1.id AND user_id = :uid) as unsigned)
                                 ) ORDER BY ik1.count DESC
                             )
                         ,']')
@@ -443,7 +446,8 @@ router.get('/item', async (req, res) => {
                                     'id', ik1.id, 
                                     'keyword_id', ik1.keyword_id,
                                     'keyword_name', k1.keyword_name,
-                                    'count', ik1.count
+                                    'count', ik1.count,
+                                    'me', cast((SELECT COUNT(*) FROM interest_keyword_relations WHERE ik_id = ik1.id AND user_id = :uid) as unsigned)
                                 ) ORDER BY ik1.count DESC
                             ),
                         ']')
