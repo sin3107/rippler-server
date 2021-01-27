@@ -978,6 +978,7 @@ token: token
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
 |id|Int| 댓글 id |o|
+|profile_id|Int| 프로필 id |o|
 
 ### response
 
