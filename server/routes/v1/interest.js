@@ -137,6 +137,14 @@ router.get('/list', async (req, res) => {
                         att.post_id = A.post_id 
                 ) AS media,
                 G.total_count,
+                (
+                    SELECT
+                        COUNT(*) as cnt
+                    FROM
+                        interest_comments
+                    WHERE
+                        post_id = A.post_id
+                ) as comment_count,
                 B.post_type
             FROM 
                 TEMP_POST A
@@ -352,6 +360,14 @@ router.get('/search_result', async (req, res) => {
                     WHERE
                         ik2.post_id = i.id
                 ) as total_count,
+                (
+                    SELECT
+                        COUNT(*) as cnt
+                    FROM
+                        interest_comments
+                    WHERE
+                        post_id = i.id
+                ) as comment_count,
                 i.post_type
             FROM
                 interest i
@@ -487,6 +503,14 @@ router.get('/item', async (req, res) => {
                     WHERE 
                         post_id = :post_id
                 ) as medias,
+                (
+                    SELECT
+                        COUNT(*) as cnt
+                    FROM
+                        interest_comments
+                    WHERE
+                        post_id = i.id
+                ) as comment_count,
                 i.post_type
             FROM 
                 interest i

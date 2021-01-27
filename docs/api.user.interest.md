@@ -46,20 +46,34 @@ response
     "code": 1000,
     "data": {
         "item": [
-            {
-                "id": 2,
-                "title": "2번글",
-                "contents": "2번글",
-                "user_id": 5,
-                "profile_id": 5,
+                "id": 25,
+                "title": "😩☺️😂😊❤️❤️❤️❤️",
+                "contents": "Arerawrwaerwarwaer",
+                "user_id": 127,
+                "profile_id": 17,
                 "me": 1,
-                "nickname": "bbb",
-                "thumbnail": 1,
-                "create_by": "2020-12-18 14:07:06",
-                "keywords": "[{\"id\": 11, \"name\": \"친구\", \"cnt\": 20},{\"id\": 14, \"name\": \"친구구함\", \"cnt\": 18},{\"id\": 17, \"name\": \"연애\", \"cnt\": 22}]",
-                "media": "[{\"id\": 5, \"type\": \"image\"},{\"id\": 78, \"type\": \"image\"}]",
-                "total_count": 107,
-                "post_type": 1
+                "nickname": "aaaaa11111",
+                "thumbnail": 173,
+                "create_by": "2021-01-25 10:56:10",
+                "keywords": [
+                    {
+                        "id": 91,
+                        "keyword_id": 11,
+                        "name": "친구",
+                        "cnt": 1,
+                        "me": 1
+                    },
+                    ...
+                ],
+                "media": [
+                    {
+                        "id": 175,
+                        "type": "image"
+                    }
+                ],
+                "total_count": 3,
+                "comment_count": 1,
+                "post_type": 2
             },
             {
                 "id": 1,
@@ -67,14 +81,30 @@ response
                 "contents": "1번글",
                 "user_id": 5,
                 "profile_id": 5,
-                "me": 1,
+                "me": 0,
                 "nickname": "bbb",
                 "thumbnail": 1,
                 "create_by": "2020-12-18 14:07:06",
-                "keywords": "[{\"id\": 11, \"name\": \"친구\", \"cnt\": 20},{\"id\": 14, \"name\": \"친구구함\", \"cnt\": 18},{\"id\": 17, \"name\": \"연애\", \"cnt\": 22}]",
-                "media": "[{\"id\": 5, \"type\": \"image\"},{\"id\": 78, \"type\": \"image\"}]",
-                "total_count": 107,
-                "post_type": 1
+                "keywords": [
+                    {
+                        "id": 1,
+                        "keyword_id": 11,
+                        "name": "친구",
+                        "cnt": 20,
+                        "me": 0
+                    },
+                    ...
+                ],
+                "media": [
+                    {
+                        "id": 5,
+                        "type": "image"
+                    },
+                    ...
+                ],
+                "total_count": 109,
+                "comment_count": 15,
+                "post_type": 0
             }
         ],
         "item_length": 2,
@@ -129,27 +159,108 @@ response
     "data": {
         "item": [
             {
-                "id": 2,
+                "id": 1,
                 "profile_id": 5,
                 "user_id": 5,
-                "me": 1,
+                "me": 0,
                 "nickname": "bbb",
                 "thumbnail": 1,
-                "create_by": "2020-12-14 10:46:28",
-                "update_by": "2020-12-16 18:26:42",
-                "title": "2번째 글",
-                "contents": "2번째 글입니다",
-                "keywords": "[
-                    {\"id\": 13, \"keyword_id\": 18, \"keyword_name\": \"사랑\", \"count\": 165},
-                    {\"id\": 11, \"keyword_id\": 15, \"keyword_name\": \"마음\", \"count\": 25},
-                    {\"id\": 12, \"keyword_id\": 14, \"keyword_name\": \"친구구함\", \"count\": 24}
-                ]",
-                "total_count": 214,
-                "medias": "[{\"name\": \"image\", \"value\": 2}"
+                "create_by": "2020-12-18 14:07:06",
+                "update_by": null,
+                "title": "1번글",
+                "contents": "1번글",
+                "keywords": [
+                    {
+                        "id": 7,
+                        "keyword_id": 17,
+                        "keyword_name": "연애",
+                        "count": 22,
+                        "me": 0
+                    },
+                    {
+                        "id": 1,
+                        "keyword_id": 11,
+                        "keyword_name": "친구",
+                        "count": 20,
+                        "me": 0
+                    },
+                    {
+                        "id": 4,
+                        "keyword_id": 14,
+                        "keyword_name": "친구구함",
+                        "count": 18,
+                        "me": 0
+                    },
+                    {
+                        "id": 10,
+                        "keyword_id": 24,
+                        "keyword_name": "고백",
+                        "count": 17,
+                        "me": 0
+                    },
+                    {
+                        "id": 9,
+                        "keyword_id": 19,
+                        "keyword_name": "커플",
+                        "count": 9,
+                        "me": 0
+                    },
+                    {
+                        "id": 8,
+                        "keyword_id": 18,
+                        "keyword_name": "사랑",
+                        "count": 8,
+                        "me": 0
+                    },
+                    {
+                        "id": 6,
+                        "keyword_id": 16,
+                        "keyword_name": "속마음",
+                        "count": 6,
+                        "me": 0
+                    },
+                    {
+                        "id": 5,
+                        "keyword_id": 15,
+                        "keyword_name": "마음",
+                        "count": 5,
+                        "me": 0
+                    },
+                    {
+                        "id": 3,
+                        "keyword_id": 13,
+                        "keyword_name": "친구공유",
+                        "count": 3,
+                        "me": 0
+                    },
+                    {
+                        "id": 2,
+                        "keyword_id": 12,
+                        "keyword_name": "우정",
+                        "count": 1,
+                        "me": 0
+                    }
+                ],
+                "total_count": 109,
+                "medias": [
+                    {
+                        "name": "image",
+                        "value": 5
+                    },
+                    {
+                        "name": "image",
+                        "value": 78
+                    },
+                    {
+                        "name": "video",
+                        "value": 83
+                    }
+                ],
+                "post_type": 0
             }
-            ],
-        "item_length": 2,
-        "total": 2
+        ],
+        "item_length": 1,
+        "total": 1
     }
 }
 ```
@@ -273,9 +384,10 @@ response
                 "contents": "7번째 글입니다",
                 "create_by": "2020-12-14 11:12:22",
                 "update_by": "2020-12-16 18:26:42",
-                "keywords": "[{\"id\": 28, \"keyword_id\": 19, \"name\": \"커플\", \"cnt\": 64},{\"id\": 27, \"keyword_id\": 12, \"name\": \"우정\", \"cnt\": 18},{\"id\": 26, \"keyword_id\": 11, \"name\": \"친구\", \"cnt\": 13}]",
+                "keywords": "[{\"id\": 28, \"keyword_id\": 19, \"name\": \"커플\", \"cnt\": 64, me: 1},...]",
                 "media": "[{\"id\": 7, \"type\": \"image\"}]",
                 "total_count": 95,
+                "comment_count" : 4,
                 "post_type": 1
             },
             {
@@ -288,9 +400,10 @@ response
                 "contents": "4번째 글입니다",
                 "create_by": "2020-12-14 10:58:41",
                 "update_by": "2020-12-16 18:26:42",
-                "keywords": "[{\"id\": 19, \"keyword_id\": 13, \"name\": \"친구공유\", \"cnt\": 300},{\"id\": 18, \"keyword_id\": 12, \"name\": \"우정\", \"cnt\": 200},{\"id\": 17, \"keyword_id\": 11, \"name\": \"친구\", \"cnt\": 100}]",
+                "keywords": "[{\"id\": 19, \"keyword_id\": 13, \"name\": \"친구공유\", \"cnt\": 300, me: 0},...]",
                 "media": "[{\"id\": 4, \"type\": \"image\"}]",
                 "total_count": 600,
+                "comment_count" : 4,
                 "post_type": 1
             }
         ],
