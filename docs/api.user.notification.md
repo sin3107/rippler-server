@@ -162,6 +162,22 @@ curl -X GET --url 'http://rippler.chaeft.com/api/v1/notification/mail' \
 
 response  
 ```bash
+
+detail_type
+0: 신고 
+1: 문의답변 
+
+2: 우편함 게시글 공유 
+3: 우편함좋아요 
+4: 우편함 댓글 
+5: 우편함 대댓글 
+
+6: 관심사 투표
+7: 관심사 댓글
+8: 관심사 대댓글
+9: 관심사 댓글 좋아요
+10: 정지 해제
+
 {
     "success": true,
     "message": "success",
@@ -177,7 +193,7 @@ response
                 "comment_id": null,
                 "contents": "444님이 회원님의 게시물에 좋아요 하였습니다.",
                 "create_by": "2020-12-24 16:21:26",
-                "pages": 1
+                "pages": 1 // 관계없음: 0 / 우편함:1 / 관심사: 2
             },
             {
                 "id": 22,
@@ -188,7 +204,7 @@ response
                 "comment_id": 132,
                 "contents": "ㄹㅇㅋㅋ",
                 "create_by": "2020-12-24 16:00:41",
-                "pages": 1
+                "pages": 1 // 관계없음: 0 / 우편함:1 / 관심사: 2
             }
         ],
         "item_length": 2,
@@ -235,6 +251,22 @@ curl -X GET --url 'http://rippler.chaeft.com/api/v1/notification/interest' \
 
 response  
 ```bash
+
+detail_type
+0: 신고 
+1: 문의답변 
+
+2: 우편함 게시글 공유 
+3: 우편함좋아요 
+4: 우편함 댓글 
+5: 우편함 대댓글 
+
+6: 관심사 투표
+7: 관심사 댓글
+8: 관심사 대댓글
+9: 관심사 댓글 좋아요
+10: 정지 해제
+
 {
     "success": true,
     "message": "success",
@@ -250,7 +282,7 @@ response
                 "comment_id": null,
                 "contents": "444님이 회원님의 게시물에 좋아요 하였습니다.",
                 "create_by": "2020-12-24 16:21:26",
-                "pages": 2
+                "pages": 2 // 관계없음: 0 / 우편함:1 / 관심사: 2
             },
             {
                 "id": 22,
@@ -261,7 +293,7 @@ response
                 "comment_id": 132,
                 "contents": "ㄹㅇㅋㅋ",
                 "create_by": "2020-12-24 16:00:41",
-                "pages": 2
+                "pages": 2 // 관계없음: 0 / 우편함:1 / 관심사: 2
             }
         ],
         "item_length": 2,
