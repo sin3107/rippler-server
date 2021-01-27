@@ -1169,6 +1169,7 @@ token: token
 |:---:|:---:|:---:|:---:|
 |id|Int| 게시물에 등록된 키워드 id |o|
 |post_id|Int| 게시물 id |o|
+|profile_id|Int| 현재 선택된 프로필 id |o|
 
 ### response
 
@@ -1191,7 +1192,8 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest/keyword_like' \
 -H 'Content-Type: application/json;charset=utf-8' 'token: token' \
 -d '{
     "id": 55,
-    "post_id": 13
+    "post_id": 13,
+    "profile_id" : 22
 }'
 ```
 
@@ -1285,8 +1287,9 @@ token: token
 
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
-|id|Int| 게시물에 등록된 키워드 id |o|
+|keyword_list|Array| 키워드 문구 추가된 배열 |o|
 |post_id|Int| 게시물 id |o|
+|profile_id|Int| 현재 선택된 프로필 id |o|
 
 ### response
 
@@ -1309,7 +1312,8 @@ curl -X POST --url 'http://rippler.chaeft.com/api/v1/interest/keyword_add' \
 -H 'Content-Type: application/json;charset=utf-8' 'token: token' \
 -d '{
     "post_id": 13,
-    "keyword_list": ["감감", "남남"]
+    "keyword_list": ["감감", "남남"],
+    "profile_id" : 22
 }'
 ```
 
