@@ -1053,6 +1053,8 @@ router.get('/comment_list', async (req, res) => {
                 blacklist bl
             ON
                 bl.user_id = mcc.user_id
+            AND
+                bl.friend_id = :uid
             WHERE 
                 mcc.mail_child_id = :id 
             AND 
