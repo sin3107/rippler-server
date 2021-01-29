@@ -192,25 +192,48 @@ router.get('/list', async (req, res) => {
     try {
         let value = ``
         if (valid.params['name']) {
-            value = `AND (u.name LIKE CONCAT('%', :name, '%') OR wl.name LIKE CONCAT('%', :name, '%'))`
+            value = `AND (nb.name LIKE CONCAT('%', :name, '%') OR wl.name LIKE CONCAT('%', :name, '%'))`
         }
 
         sql = `
             SELECT
-                NULL AS id,
-                name as nickname, 
-                NULL AS set_nickname,
-                NULL AS thumbnail,
-                NULL AS status_msg,
-                0 AS favorite,
-                num
+                u.id AS id,
+                nb.name as nickname, 
+                wl.name AS set_nickname,
+                CASE WHEN ur.user_id IS NULL THEN NULL ELSE u.thumbnail END AS thumbnail,
+                u.status_msg AS status_msg,
+                wl.favorite AS favorite,
+                nb.num
             FROM
-                num_books
+                num_books nb
+            LEFT JOIN
+                users u
+            ON
+                u.num = nb.num
+            LEFT JOIN
+                whitelist wl
+            ON
+                u.id = wl.friend_id
+            AND
+                wl.user_id = :uid
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = :uid
+            AND
+                bl.friend_id = u.id
+            LEFT JOIN
+                user_relations ur
+            ON
+                ur.user_id = u.id
+            AND
+                ur.friend_id = :uid
             WHERE
-                user_id = :uid
-            ${valid.where}
+                nb.user_id = :uid
+            AND
+                bl.user_id IS NULL
+            ${value}
         `
-
         friend = await _db.qry(sql, valid.params)
 
         if (friend.length < 1) {
