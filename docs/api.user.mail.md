@@ -649,6 +649,8 @@ token : token
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
 |id|Int| 게시물 id |o|
+|page|Int| 현재 페이지 숫자 |o|
+|limit|Int| 한 페이지에 보여줄 갯수 |x|
 
 ### response
 
@@ -667,7 +669,7 @@ token : token
 request  
 ```bash
 # 게시물 댓글 목록 호출
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail/comment_list?id=45' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail/comment_list?id=45&page=1' \
 -H 'token: token' \
 ```
 
@@ -690,6 +692,20 @@ response
                 "thumbnail": 2,
                 "name": "222",
                 "me": 0,
+                "child_comment": [
+                    {
+                        "id": 184,
+                        "mail_com_id": 51,
+                        "parent": 49,
+                        "contents": "감사합니다!",
+                        "user_id": 5,
+                        "create_by": "2021-01-07 13:03:16",
+                        "update_by": null,
+                        "name": "555",
+                        "thumbnail": 5,
+                        "me": 1
+                    }
+                ],
                 "total_comment_count": 1
             }
         ],
@@ -714,6 +730,8 @@ token : token
 |:---:|:---:|:---:|:---:|
 |id|Int| 게시물 id |o|
 |mail_com_id|Int| 부모댓글의 parent_id |o|
+|page|Int| 현재 페이지 숫자 |o|
+|limit|Int| 한 페이지에 보여줄 갯수 |x|
 
 ### response
 
@@ -732,7 +750,7 @@ token : token
 request  
 ```bash
 # 하나의 댓글에 대한 대댓글 목록 호출
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail/comment_child_list?id=34&mail_com_id=35' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/mail/comment_child_list?id=34&mail_com_id=35&page=1' \
 -H 'token: token' \
 ```
 
