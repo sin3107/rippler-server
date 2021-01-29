@@ -197,7 +197,13 @@ router.get('/list', async (req, res) => {
 
         sql = `
             SELECT
-                name, num
+                NULL AS id,
+                name as nickname, 
+                NULL AS set_nickname,
+                NULL AS thumbnail,
+                NULL AS status_msg,
+                0 AS favorite,
+                num
             FROM
                 num_books
             WHERE
