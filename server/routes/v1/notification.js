@@ -100,7 +100,15 @@ router.get('/mail', async(req, res) => {
 
         sql = `
             SELECT
-                id, detail_type, user_id, thumbnail, post_id, comment_id, contents, create_by, pages
+                id, 
+                detail_type, 
+                user_id, 
+                thumbnail, 
+                post_id, 
+                comment_id, 
+                contents, 
+                create_by, 
+                pages
             FROM
                 messages
             WHERE

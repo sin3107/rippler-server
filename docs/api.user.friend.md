@@ -45,33 +45,33 @@ response
     "message": "success",
     "code": 1000,
     "data": {
-            "friend": [
-                {
-                    "id": 2,
-                    "friend_name": "222",
-                    "set_nickname": null,
-                    "thumbnail": null,
-                    "status_msg": null,
-                    "favorite": 0
-                },
-                {
-                    "id": 1,
-                    "friend_name": "111",
-                    "set_nickname": null,
-                    "thumbnail": null,
-                    "status_msg": null,
-                    "favorite": 0
-                },
-                {
-                    "id": 3,
-                    "friend_name": "333",
-                    "set_nickname": null,
-                    "thumbnail": null,
-                    "status_msg": null,
-                    "favorite": 1
-                }
-            ]
-        }
+        "friend": [
+            {
+                "id": 2,
+                "friend_name": "222",
+                "set_nickname": null,
+                "thumbnail": null,
+                "status_msg": null,
+                "favorite": 0
+            },
+            {
+                "id": 1,
+                "friend_name": "111",
+                "set_nickname": null,
+                "thumbnail": null,
+                "status_msg": null,
+                "favorite": 0
+            },
+            {
+                "id": 3,
+                "friend_name": "333",
+                "set_nickname": null,
+                "thumbnail": null,
+                "status_msg": null,
+                "favorite": 1
+            }
+        ]
+    }
 }
 ```
 

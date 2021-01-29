@@ -164,6 +164,7 @@ response
         "item": [
             {
                 "mail_id": 43,
+                "mail_type": 2,
                 "mail_child_id": 47,
                 "file": "[{\"name\": \"image\", \"value\": 30},{\"name\": \"image\", \"value\": 31}]",
                 "target_cnt": 2,
@@ -221,8 +222,10 @@ response
     "data": {
         "item": [
             {
-                "mail_id": 43,
-                "mail_child_id": 47,
+                "mail_id": 81,
+                "mail_type": 2,
+                "mail_child_id": 124,
+                "interest_id": 2,
                 "file": "[{\"name\": \"image\", \"value\": 30},{\"name\": \"image\", \"value\": 31}]",
                 "target_cnt": 2,
                 "pool_cnt": 1
