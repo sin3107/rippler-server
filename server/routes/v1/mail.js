@@ -1003,7 +1003,9 @@ router.get('/comment_list', async (req, res) => {
     let result
 
     const params = [
-        {key: 'id', type: 'num', required: true}
+        {key: 'id', type: 'num', required: true},
+        {key: 'page', value: 'page', type: 'num', required: true},
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true}
     ]
 
     try {
@@ -1017,14 +1019,14 @@ router.get('/comment_list', async (req, res) => {
     try {
         sql = `
             SELECT 
-                mcc.id,
-                mcc.mail_com_id,
-                mcc.parent,
-                mcc.contents,
-                mcc.user_id,
-                mcc.create_by,
-                mcc.update_by,
-                u.name,
+                mcc.id, 
+                mcc.mail_com_id, 
+                mcc.parent, 
+                mcc.contents, 
+                mcc.user_id, 
+                mcc.create_by, 
+                mcc.update_by, 
+                u.name, 
                 CASE 
                     WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = mcc.user_id AND friend_id = :uid) = 0
                         THEN NULL
@@ -1035,6 +1037,47 @@ router.get('/comment_list', async (req, res) => {
                 CASE WHEN u.id = :uid THEN 1 ELSE 0 END AS me, 
                 (
                     SELECT 
+                        CONCAT('[',
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "id", mcc1.id,
+                                    "mail_com_id", mcc1.mail_com_id,
+                                    "parent", mcc1.parent,
+                                    "contents", mcc1.contents,
+                                    "user_id", mcc1.user_id,
+                                    "create_by", mcc1.create_by,
+                                    "update_by", mcc1.update_by,
+                                    "name", u1.name,
+                                    "thumbnail", CASE 
+                                        WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = mcc1.user_id AND friend_id = :uid) = 0
+                                            THEN NULL
+                                        WHEN bl1.user_id IS NULL 
+                                            THEN u1.thumbnail 
+                                        ELSE bl1.thumbnail 
+                                    END,
+                                    "me", CASE WHEN u1.id = :uid THEN 1 ELSE 0 END
+                                ) ORDER BY mcc1.create_by DESC LIMIT 1
+                            )
+                        ,']')
+                    FROM 
+                        mail_comments_child mcc1
+                    INNER JOIN 
+                        users u1 
+                    ON 
+                        mcc1.user_id = u1.id
+                    LEFT JOIN
+                        blacklist bl1
+                    ON
+                        bl1.user_id = mcc1.user_id
+                    AND
+                        bl1.friend_id = :uid
+                    WHERE 
+                        mcc1.mail_child_id = :id 
+                    AND 
+                        mcc1.parent = mcc.mail_com_id
+                ) as child_comment, 
+                (
+                    SELECT 
                         COUNT(*) 
                     FROM 
                         mail_comments_child 
@@ -1042,16 +1085,16 @@ router.get('/comment_list', async (req, res) => {
                         mail_child_id = :id
                     AND
                         parent = mcc.mail_com_id
-                ) as total_comment_count
+                ) as total_comment_count 
             FROM 
-                mail_comments_child mcc
+                mail_comments_child mcc 
             INNER JOIN 
                 users u 
             ON 
-                mcc.user_id = u.id
-            LEFT JOIN
-                blacklist bl
-            ON
+                mcc.user_id = u.id 
+            LEFT JOIN 
+                blacklist bl 
+            ON 
                 bl.user_id = mcc.user_id
             AND
                 bl.friend_id = :uid
@@ -1061,8 +1104,9 @@ router.get('/comment_list', async (req, res) => {
                 mcc.parent = 0
             ORDER BY 
                 create_by DESC
+            LIMIT
+                :page, :limit
         `
-
         result = await _db.qry(sql, valid.params)
 
         if (result.length < 1) {
@@ -1070,7 +1114,35 @@ router.get('/comment_list', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT 
+                COUNT(*) as cnt
+            FROM 
+                mail_comments_child mcc 
+            INNER JOIN 
+                users u 
+            ON 
+                mcc.user_id = u.id 
+            LEFT JOIN 
+                blacklist bl 
+            ON 
+                bl.user_id = mcc.user_id
+            AND
+                bl.friend_id = :uid
+            WHERE 
+                mcc.mail_child_id = :id 
+            AND 
+                mcc.parent = 0
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _util.toJson(out['item'], 'child_comment')
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -1088,7 +1160,9 @@ router.get('/comment_child_list', async (req, res) => {
 
     const params = [
         {key: 'id', type: 'num', required: true},
-        {key: 'mail_com_id', type: 'num', required: true}
+        {key: 'mail_com_id', type: 'num', required: true},
+        {key: 'page', value: 'page', type: 'num', required: true},
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true}
     ]
 
     try {
@@ -1136,6 +1210,8 @@ router.get('/comment_child_list', async (req, res) => {
                 mcc.parent = :mail_com_id
             ORDER BY 
                 create_by DESC
+            LIMIT
+                :page, :limit
         `
         result = await _db.qry(sql, valid.params)
 
@@ -1144,7 +1220,33 @@ router.get('/comment_child_list', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item: result}
+
+        sql = `
+            SELECT 
+                COUNT(*) as cnt
+            FROM 
+                mail_comments_child mcc
+            INNER JOIN 
+                users u 
+            ON 
+                mcc.user_id = u.id
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = mcc.user_id
+            AND
+                bl.friend_id = :uid
+            WHERE 
+                mcc.mail_child_id = :id 
+            AND 
+                mcc.parent = :mail_com_id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)

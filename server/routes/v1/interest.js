@@ -914,7 +914,9 @@ router.get('/comments', async (req, res) => {
     let result
 
     const params = [
-        {key: 'post_id', type: 'num', required: true}
+        {key: 'post_id', type: 'num', required: true},
+        {key: 'page', value: 'page', type: 'num', required: true},
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true}
     ]
 
     try {
@@ -929,16 +931,45 @@ router.get('/comments', async (req, res) => {
 
         sql = `
             SELECT 
-                ic1.id,
-                ic1.post_id,
-                ic1.profile_id,
-                ic1.user_id,
-                up1.nickname,
-                up1.thumbnail,
-                ic1.contents,
-                ic1.count,
-                ic1.create_by,
-                ic1.update_by,
+                ic.id,
+                ic.post_id,
+                ic.profile_id,
+                ic.user_id,
+                up.nickname,
+                up.thumbnail,
+                ic.contents,
+                ic.count,
+                ic.create_by,
+                ic.update_by,
+                (
+                    SELECT
+                        CONCAT('[',
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    "id",ic1.id,
+                                    "post_id",ic1.post_id,
+                                    "profile_id",ic1.profile_id,
+                                    "user_id",ic1.user_id,
+                                    "nickname",up1.nickname,
+                                    "thumbnail",up1.thumbnail,
+                                    "parent",ic1.parent,
+                                    "contents",ic1.contents,
+                                    "count",ic1.COUNT,
+                                    "create_by",ic1.create_by,
+                                    "update_by",ic1.update_by,
+                                    "me",case when ic1.user_id = :uid then 1 ELSE 0 END
+                                ) ORDER BY count DESC, ic1.create_by DESC LIMIT 1
+                            )
+                        ,']')
+                    FROM
+                        interest_comments ic1
+                    LEFT JOIN 
+                        user_profiles up1 
+                    ON 
+                        ic1.profile_id = up1.id
+                    WHERE 
+                        parent = ic.id
+                ) AS child_comment,
                 (
                     SELECT 
                         COUNT(*) 
@@ -947,21 +978,24 @@ router.get('/comments', async (req, res) => {
                     WHERE 
                         post_id = :post_id
                     AND 
-                        parent = 0
+                        parent = ic.id
                 ) as total_count,
-                case when ic1.user_id = :uid then 1 ELSE 0 END AS me
+                case when ic.user_id = :uid then 1 ELSE 0 END AS me
             FROM
-                interest_comments ic1
+                interest_comments ic
             LEFT JOIN 
-                user_profiles up1 
+                user_profiles up
             ON
-                ic1.profile_id = up1.id
+                ic.profile_id = up.id
             WHERE 
-                ic1.post_id = :post_id AND parent = 0
+                ic.post_id = :post_id 
+            AND 
+                parent = 0
             ORDER BY 
-                ic1.create_by DESC;
+                ic.create_by DESC
+            LIMIT
+                :page, :limit
         `
-
         result = await _db.qry(sql, valid.params)
 
         if (result.length < 1) {
@@ -969,7 +1003,29 @@ router.get('/comments', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT 
+                COUNT(*) as cnt
+            FROM
+                interest_comments ic1
+            LEFT JOIN 
+                user_profiles up1 
+            ON
+                ic1.profile_id = up1.id
+            WHERE 
+                ic1.post_id = :post_id 
+            AND 
+                parent = 0
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _util.toJson(out['item'], 'child_comment')
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
@@ -986,7 +1042,9 @@ router.get('/child_comments', async (req, res) => {
     let result
 
     const params = [
-        {key: 'comment_id', type: 'num', required: true}
+        {key: 'comment_id', type: 'num', required: true},
+        {key: 'page', value: 'page', type: 'num', required: true},
+        {key: 'limit', value: 'limit', type: 'num', max: 100, optional: true}
     ]
 
     try {
@@ -1022,6 +1080,8 @@ router.get('/child_comments', async (req, res) => {
                 ic1.parent = :comment_id
             ORDER BY 
                 ic1.create_by DESC
+            LIMIT
+                :page, :limit
         `
 
         result = await _db.qry(sql, valid.params)
@@ -1031,7 +1091,25 @@ router.get('/child_comments', async (req, res) => {
             return
         }
 
-        _out.print(res, null, result)
+        let out = {item : result}
+
+        sql = `
+            SELECT 
+                COUNT(*) as cnt
+            FROM
+                interest_comments ic1
+            LEFT JOIN 
+                user_profiles up1 
+            ON 
+                ic1.profile_id = up1.id
+            WHERE 
+                ic1.parent = :comment_id
+        `
+        result = await _db.qry(sql, valid.params)
+
+        out['total'] = result[0]['cnt']
+
+        _out.print(res, null, out)
 
     } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)

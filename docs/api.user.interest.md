@@ -738,6 +738,8 @@ token : token
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
 |post_id|Int| 게시글 id |o|
+|page|Int| 현재 페이지 숫자 |o|
+|limit|Int| 한 페이지에 보여줄 갯수 |x|
 
 ### response
 
@@ -756,7 +758,7 @@ token : token
 request  
 ```bash
 # 댓글 목록 호출
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/interest/comments?post_id=:pid' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/interest/comments?post_id=1&page=1' \
 -H 'token: token' \
 ```
 
@@ -770,53 +772,68 @@ response
     "data": {
         "item": [
             {
-                "id": 11,
+                "id": 25,
                 "post_id": 1,
-                "profile_id": 11,
-                "user_id": 1,
-                "parent": 0,
-                "contents": "7번 댓글",
-                "COUNT": 1,
-                "create_by": "2020-12-16 09:25:44",
-                "update_by": null,
+                "profile_id": 2,
+                "user_id": 5,
                 "nickname": null,
                 "thumbnail": null,
-                "total_count": 6,
-                "me": 0
+                "contents": "9번 댓글",
+                "count": 1,
+                "create_by": "2020-12-22 14:23:50",
+                "update_by": null,
+                "child_comment": [
+                    {
+                        "id": 28,
+                        "post_id": 1,
+                        "profile_id": 3,
+                        "user_id": 5,
+                        "nickname": null,
+                        "thumbnail": null,
+                        "parent": 25,
+                        "contents": "9-1",
+                        "count": 0,
+                        "create_by": "2020-12-22 14:24:47",
+                        "update_by": null,
+                        "me": 1
+                    }
+                ],
+                "total_count": 1,
+                "me": 1
             },
             {
-                "id": 10,
-                "post_id": 1,
-                "profile_id": 10,
-                "user_id": 1,
-                "parent": 0,
-                "contents": "6번 댓글",
-                "COUNT": 12,
-                "create_by": "2020-12-14 17:44:30",
-                "update_by": "2020-12-14 17:49:20",
-                "nickname": "FFF",
-                "thumbnail": 1,
-                "total_count": 6,
-                "me": 0
-            },
-            {
-                "id": 7,
+                "id": 1,
                 "post_id": 1,
                 "profile_id": 8,
                 "user_id": 1,
-                "parent": 0,
-                "contents": "4번 댓글",
-                "COUNT": 0,
-                "create_by": "2020-12-14 15:30:39",
-                "update_by": null,
                 "nickname": "CCCC",
                 "thumbnail": 1,
-                "total_count": 6,
+                "contents": "1번 댓글",
+                "count": 17,
+                "create_by": "2020-12-14 15:26:59",
+                "update_by": null,
+                "child_comment": [
+                    {
+                        "id": 2,
+                        "post_id": 1,
+                        "profile_id": 8,
+                        "user_id": 1,
+                        "nickname": "CCCC",
+                        "thumbnail": 1,
+                        "parent": 1,
+                        "contents": "1-1",
+                        "count": 22,
+                        "create_by": "2020-12-14 15:28:52",
+                        "update_by": "2020-12-16 10:22:14",
+                        "me": 0
+                    }
+                ],
+                "total_count": 4,
                 "me": 0
-            },
+            }
         ],
-        "item_length": 3,
-        "total": 3
+        "item_length": 2,
+        "total": 2
     }
 }
 ```
@@ -836,6 +853,8 @@ token : token
 |name|type|desc|required|
 |:---:|:---:|:---:|:---:|
 |comment_id|Int| 댓글 id |o|
+|page|Int| 현재 페이지 숫자 |o|
+|limit|Int| 한 페이지에 보여줄 갯수 |x|
 
 ### response
 
@@ -854,7 +873,7 @@ token : token
 request  
 ```bash
 # 대댓글 호출
-curl -X GET --url 'http://rippler.chaeft.com/api/v1/interest/child_comments?post_id=:pid' \
+curl -X GET --url 'http://rippler.chaeft.com/api/v1/interest/child_comments?comment_id=1&page=1' \
 -H 'token: token' \
 ```
 
@@ -880,7 +899,8 @@ response
                     "create_by": "2020-12-14 15:42:14",
                     "update_by": null,
                     "me": 1
-                }
+            },
+            ....}
         ],
         "item_length": 3,
         "total": 3

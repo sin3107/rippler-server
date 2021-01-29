@@ -439,7 +439,6 @@ router.get('/authorized', async (req, res) => {
             name_list[i] = {id: c, name: first_name[a] + last_name[b]}
         }
 
-
         sql = `
             SELECT
                 u.id,

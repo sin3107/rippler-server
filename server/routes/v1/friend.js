@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-
+/*
 router.get('/list', async (req, res) => {
 
     let sql
@@ -10,9 +10,9 @@ router.get('/list', async (req, res) => {
     let result
 
     let friend
-    /*let friend_total
+    /!*let friend_total
     let favorite
-    let favorite_total*/
+    let favorite_total*!/
 
     const params = [
         {key: "name", value: 'u.name', type: 'str', optional: true, where: true, like: true}
@@ -33,25 +33,25 @@ router.get('/list', async (req, res) => {
         }
         sql = `
             SELECT
-                u.id, 
-                u.name as friend_name, 
-                CASE 
-                    WHEN wl.name IS NULL 
-                        THEN 
-                            u.name 
-                        ELSE 
-                            wl.name 
+                u.id,
+                u.name as friend_name,
+                CASE
+                    WHEN wl.name IS NULL
+                        THEN
+                            u.name
+                        ELSE
+                            wl.name
                     END AS nickname,
-                CASE 
-                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0 
-                        THEN 
+                CASE
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0
+                        THEN
                             NULL
-                        WHEN 
-                            bl.user_id IS NULL 
-                        THEN 
-                            u.thumbnail 
-                        ELSE 
-                            bl.thumbnail 
+                        WHEN
+                            bl.user_id IS NULL
+                        THEN
+                            u.thumbnail
+                        ELSE
+                            bl.thumbnail
                     END AS thumbnail,
                 CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
                 wl.favorite
@@ -78,7 +78,7 @@ router.get('/list', async (req, res) => {
             return
         }
 
-        /*        sql = `
+        /!*        sql = `
                     SELECT
                         COUNT(*) as cnt
                     FROM
@@ -92,30 +92,30 @@ router.get('/list', async (req, res) => {
                 `
                 result = await _db.execQry(conn, sql, valid)
 
-                friend_total = result[0]['cnt']*/
+                friend_total = result[0]['cnt']*!/
 
 
-        /*sql = `
+        /!*sql = `
             SELECT
-                u.id, 
-                u.name as friend_name, 
-                CASE 
-                    WHEN wl.name IS NULL 
-                        THEN 
-                            u.name 
-                        ELSE 
-                            wl.name 
+                u.id,
+                u.name as friend_name,
+                CASE
+                    WHEN wl.name IS NULL
+                        THEN
+                            u.name
+                        ELSE
+                            wl.name
                     END AS nickname,
-                CASE 
-                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0 
-                        THEN 
+                CASE
+                    WHEN (SELECT COUNT(*) FROM user_relations WHERE user_id = u.id AND friend_id = :uid) = 0
+                        THEN
                             NULL
-                        WHEN 
-                            bl.user_id IS NULL 
-                        THEN 
-                            u.thumbnail 
-                        ELSE 
-                            bl.thumbnail 
+                        WHEN
+                            bl.user_id IS NULL
+                        THEN
+                            u.thumbnail
+                        ELSE
+                            bl.thumbnail
                     END AS thumbnail,
                 CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
                 wl.favorite
@@ -136,8 +136,8 @@ router.get('/list', async (req, res) => {
             AND
                 wl.favorite = 1
         `
-        favorite = await _db.execQry(conn, sql, valid)*/
-        /*
+        favorite = await _db.execQry(conn, sql, valid)*!/
+        /!*
                 sql = `
                     SELECT
                         COUNT(*) as cnt
@@ -152,8 +152,65 @@ router.get('/list', async (req, res) => {
                 `
                 result = await _db.execQry(conn, sql, valid)
 
-                favorite_total = result[0]['cnt']*/
+                favorite_total = result[0]['cnt']*!/
 
+
+        result = {
+            "friend": friend
+        }
+
+        _out.print(res, null, result)
+
+    } catch (e) {
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+    }
+
+})*/
+
+
+router.get('/list', async (req, res) => {
+
+    let sql
+    let valid = {}
+    let body = req.query
+    let result
+
+    let friend
+
+    const params = [
+        {key: "name", value: 'name', type: 'str', optional: true, where: true, like: true}
+    ]
+
+    try {
+        _util.valid(body, params, valid)
+        valid.params['uid'] = req.uinfo['u']
+    } catch (e) {
+        _out.err(res, _CONSTANT.INVALID_PARAMETER, e.toString(), null)
+        return
+    }
+
+    try {
+        let value = ``
+        if (valid.params['name']) {
+            value = `AND (u.name LIKE CONCAT('%', :name, '%') OR wl.name LIKE CONCAT('%', :name, '%'))`
+        }
+
+        sql = `
+            SELECT
+                name, num
+            FROM
+                num_books
+            WHERE
+                user_id = :uid
+            ${valid.where}
+        `
+
+        friend = await _db.qry(sql, valid.params)
+
+        if (friend.length < 1) {
+            _out.print(res, _CONSTANT.EMPTY_DATA, null)
+            return
+        }
 
         result = {
             "friend": friend
