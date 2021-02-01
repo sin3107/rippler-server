@@ -442,13 +442,22 @@ router.get('/authorized', async (req, res) => {
         sql = `
             SELECT
                 u.id,
-                CASE WHEN wl.name IS NULL OR wl.name = '' THEN u.name ELSE wl.name END as name
+                CASE 
+                    WHEN wl.name IS NOT NULL AND wl.name != '' THEN wl.name
+                    WHEN nb.name IS NOT NULL AND nb.name != '' THEN nb.name
+                    ELSE u.name END AS name
             FROM 
                 users u
             INNER JOIN
                 whitelist wl
             ON
                 wl.friend_id = u.id
+            LEFT JOIN
+                num_books nb
+            ON
+                u.num = nb.num
+            AND
+                nb.user_id = :uid
             WHERE 
                 wl.user_id = :uid
             ORDER BY

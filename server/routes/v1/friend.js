@@ -32,8 +32,10 @@ router.get('/list', async (req, res) => {
         sql = `
             SELECT
                 u.id,
-                u.name as nickname,
-                CASE WHEN wl.name IS NULL THEN nb.name ELSE wl.name END AS set_nickname,
+                CASE
+                    WHEN wl.name IS NOT NULL AND wl.name != '' THEN wl.name
+                    WHEN nb.name IS NOT NULL AND nb.name != '' THEN nb.name
+                    ELSE u.name END AS nickname,
                 CASE WHEN ur.user_id IS NULL THEN NULL 
                 WHEN bl.user_id IS NULL THEN u.thumbnail ELSE bl.thumbnail END AS thumbnail,
                 CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
