@@ -43,6 +43,8 @@ router.get('/list', async (req, res) => {
                 ${valid.where}
             AND
                stop != 100 
+            AND
+                join_yn = 1
             ORDER BY
                 create_by DESC
             LIMIT
