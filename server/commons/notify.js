@@ -827,7 +827,7 @@ notify.prototype.notiMailFeed = async function (mail_id, insert_list, uid) {
 
             sql = `
                 SELECT 
-                    device_token as fcm_token
+                    device_token as fcm_token, join_yn
                 FROM 
                     users u
                 WHERE
@@ -837,6 +837,10 @@ notify.prototype.notiMailFeed = async function (mail_id, insert_list, uid) {
 
             if (result.length < 1) {
                 return
+            }
+
+            if(result[0]['join_yn'] < 1){
+                continue
             }
 
             const fcm_token = result[0]['fcm_token']
