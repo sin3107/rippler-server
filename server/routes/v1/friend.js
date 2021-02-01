@@ -192,46 +192,46 @@ router.get('/list', async (req, res) => {
     try {
         let value = ``
         if (valid.params['name']) {
-            value = `AND (nb.name LIKE CONCAT('%', :name, '%') OR wl.name LIKE CONCAT('%', :name, '%'))`
+            value = `AND (wl.name LIKE CONCAT('%', :name, '%') OR nb.name LIKE CONCAT('%', :name, '%'))`
         }
 
         sql = `
             SELECT
-                u.id AS id,
-                nb.name as nickname, 
-                wl.name AS set_nickname,
-                CASE WHEN ur.user_id IS NULL THEN NULL ELSE u.thumbnail END AS thumbnail,
-                u.status_msg AS status_msg,
-                wl.favorite AS favorite,
-                nb.num
+                u.id,
+                u.name as nickname,
+                CASE WHEN wl.name IS NULL THEN nb.name ELSE wl.name END AS set_nickname,
+                CASE WHEN ur.user_id IS NULL THEN NULL 
+                WHEN bl.user_id IS NULL THEN u.thumbnail ELSE bl.thumbnail END AS thumbnail,
+                CASE WHEN bl.user_id IS NULL THEN u.status_msg ELSE bl.status_msg END AS status_msg,
+                wl.favorite AS favorite
             FROM
-                num_books nb
-            LEFT JOIN
                 users u
-            ON
-                u.num = nb.num
-            LEFT JOIN
+            INNER JOIN
                 whitelist wl
             ON
-                u.id = wl.friend_id
+                wl.friend_id = u.id
             AND
                 wl.user_id = :uid
-            LEFT JOIN
-                blacklist bl
-            ON
-                bl.user_id = :uid
-            AND
-                bl.friend_id = u.id
             LEFT JOIN
                 user_relations ur
             ON
                 ur.user_id = u.id
             AND
                 ur.friend_id = :uid
-            WHERE
-                nb.user_id = :uid
+            LEFT JOIN
+                blacklist bl
+            ON
+                bl.user_id = u.id
             AND
-                bl.user_id IS NULL
+                bl.friend_id = :uid
+            LEFT JOIN
+                num_books nb
+            ON
+                u.num = nb.num
+            AND
+                nb.user_id = 5
+            WHERE
+                1=1
             ${value}
         `
         friend = await _db.qry(sql, valid.params)
@@ -362,13 +362,6 @@ router.post('/sync', async (req, res) => {
             return
         }
 
-
-        /*let area = valid['params']['content_list'][0]['num'].substring(0, 5)
-
-        if(area === "+8210"){
-            valid['params']['content_list'][0]['num'] = "010"+valid['params']['content_list'][0]['num'].substring(5)
-        }*/
-
         values = `(:uid, '${valid['params']['content_list'][0]['name']}','${valid['params']['content_list'][0]['num']}')`
 
         for (let i = 1, e = valid['params']['content_list'].length; i < e; i++) {
@@ -403,9 +396,7 @@ router.post('/add', async (req, res) => {
     let sql
     let valid = {}
     let result
-    let values
     let blind
-    let media
 
     try {
         valid['uid'] = req.uinfo['u']
@@ -414,7 +405,12 @@ router.post('/add', async (req, res) => {
         return
     }
 
+
+    const conn = await _db.getConn()
+
     try {
+
+        await conn.beginTransaction()
 
         sql = `
             SELECT
@@ -424,9 +420,11 @@ router.post('/add', async (req, res) => {
             WHERE
                 id = :uid
         `
-        result = await _db.qry(sql, valid)
+        result = await _db.execQry(conn, sql, valid)
 
         if (result.length < 1) {
+            await conn.rollback()
+            conn.release()
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
@@ -435,99 +433,63 @@ router.post('/add', async (req, res) => {
 
         sql = `
             SELECT
-                id
+                my.num
             FROM
                 (
                     SELECT
-                        nb.user_id
-                    FROM
-                        num_books nb
-                    INNER JOIN
-                        users u
-                    ON
-                        nb.num = u.num
-                    WHERE
-                        u.id = :uid
-                ) fri
-            INNER JOIN
-                (
-                    SELECT
-                        u.id, u.name
-                    FROM
-                        num_books nb
-                    INNER JOIN
-                        users u
-                    ON
-                        u.num = nb.num
-                    WHERE
-                        nb.user_id = :uid
+                       nb.user_id, nb.num
+                   FROM
+                       num_books nb
+                   WHERE
+                       nb.user_id = :uid
                 ) my
-            ON
-                my.id = fri.user_id
             LEFT JOIN
                 (
                     SELECT
-                        w.friend_id
+                        u.id, u.num
                     FROM
                         whitelist w
-                    WHERE
-                        user_id = :uid
+                    LEFT JOIN
+                        users u
+                    ON
+                        w.user_id = :uid
+                    AND
+                        w.friend_id = u.id
                 ) wl
-            on
-                wl.friend_id = my.id
+            ON
+                my.num = wl.num
+            LEFT JOIN
+                (
+                    SELECT
+                        u.id, u.num
+                    FROM
+                        blacklist b
+                    LEFT JOIN
+                        users u
+                    ON
+                        b.user_id = :uid
+                    AND
+                        b.friend_id = u.id
+                ) bl
+            ON
+                my.num = bl.num
             WHERE
-                wl.friend_id is NULL
+                wl.id IS NULL
+            AND
+                bl.id IS NULL
         `
-
-        result = await _db.qry(sql, valid)
+        result = await _db.execQry(conn, sql, valid)
 
         if (result.length < 1) {
+            await conn.rollback()
+            conn.release()
             _out.print(res, _CONSTANT.SUCCESS, [true])
             return
         }
 
-    } catch (e) {
-        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
-    }
+        let num_list = result
 
-    if (blind < 1) {
-        try {
-
-            values = `( :uid, ${result[0]['id']})`
-
-            for (let i = 1, e = result.length; i < e; i++) {
-
-                values += `, ( :uid, ${result[i]['id']})`
-
-            }
-
-            sql = `
-                INSERT INTO
-                    whitelist(
-                        user_id, friend_id
-                    )
-                VALUES 
-                ${values}
-            `
-
-            result = await _db.qry(sql, valid)
-
-            if (result.affectedRows < 1) {
-                _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
-                return
-            }
-
-            _out.print(res, null, [result.affectedRows])
-
-        } catch (e) {
-            _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        }
-
-    } else {
-
-        try {
-
+        if (blind > 0) { // blacklist에 추가일 때 사용 할 내 정보 저장
             sql = `
                 SELECT
                     thumbnail, status_msg
@@ -536,38 +498,77 @@ router.post('/add', async (req, res) => {
                 WHERE
                     id = :uid
             `
-            media = await _db.qry(sql, valid)
+            result = await _db.execQry(conn, sql, valid)
 
-            valid['thumbnail'] = media[0]['thumbnail']
-            valid['status_msg'] = media[0]['status_msg']
+            valid['thumbnail'] = result[0]['thumbnail']
+            valid['status_msg'] = result[0]['status_msg']
+        }
 
-            values = `(:uid, ${result[0]['id']}, :thumbnail, :status_msg)`
+        for (let i = 0, e = num_list.length; i < e; i++) {
 
-            for (let i = 1, e = result.length; i < e; i++) {
-                values += `, (:uid, ${result[i]['id']}, :thumbnail, :status_msg)`
-            }
+            valid['num'] = num_list[i]['num']
 
             sql = `
-            INSERT INTO
-                blacklist(
-                    user_id, friend_id, thumbnail, status_msg
-                )
-            VALUES 
-            ${values}
+                SELECT
+                    id
+                FROM
+                    users
+                WHERE
+                    num = :num
             `
+            result = await _db.execQry(conn, sql, valid)
 
-            result = await _db.qry(sql, valid)
+            if (result.length < 1) {
+                sql = `
+                    INSERT INTO
+                        users(num)
+                    VALUE(:num)
+                `
+                result = await _db.execQry(conn, sql, valid)
 
-            if (result.affectedRows < 1) {
-                _out.print(res, _CONSTANT.EMPTY_PARAMETER, [0])
-                return
+                valid['fid'] = result.insertId
+
+            } else {
+                valid['fid'] = result[0]['id']
             }
 
-            _out.print(res, null, [result.affectedRows])
+            if (blind < 1) { // whitelist에 추가
+                sql = `
+                    INSERT INTO
+                        whitelist(
+                            user_id, friend_id
+                        )
+                    VALUES
+                        (
+                            :uid, :fid
+                        )
+                `
+                await _db.execQry(conn, sql, valid)
+            } else { // blacklist에 추가
 
-        } catch (e) {
-            _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
+                sql = `
+                    INSERT INTO
+                        blacklist(
+                            user_id, friend_id, thumbnail, status_msg
+                        )
+                    VALUES
+                        (
+                            :uid, :fid, :thumbnail, :status_msg
+                        )
+                `
+                await _db.execQry(conn, sql, valid)
+            }
         }
+
+        await conn.commit()
+        conn.release()
+
+        _out.print(res, null, [num_list.length])
+
+    } catch (e) {
+        await conn.rollback()
+        conn.release()
+        _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 })
 
@@ -578,10 +579,11 @@ router.get('/setting_state', async (req, res) => {
     let sql_params = {uid: req.uinfo['u']}
     let result
 
-    try{
+    try {
         sql = `
             SELECT
-                auto, blind
+                auto, 
+                blind
             FROM
                 users
             WHERE
@@ -589,14 +591,14 @@ router.get('/setting_state', async (req, res) => {
         `
         result = await _db.qry(sql, sql_params)
 
-        if(result.length < 1) {
+        if (result.length < 1) {
             _out.print(res, _CONSTANT.EMPTY_DATA, null)
             return
         }
 
         _out.print(res, null, result)
-        
-    }catch (e) {
+
+    } catch (e) {
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
     }
 
@@ -626,13 +628,15 @@ router.post('/settings', async (req, res) => {
     try {
 
         sql = `
-            UPDATE
-                users
-            SET
-                ${valid.update}
-            WHERE
-                id = :uid
-        `
+        UPDATE
+        users
+        SET
+        ${valid.update}
+        WHERE
+        id =
+    :
+        uid
+            `
         result = await _db.qry(sql, valid.params)
 
         if (result.changedRows < 1) {
@@ -678,7 +682,7 @@ router.post('/nickname_edit', async (req, res) => {
                 ${valid.update}
             WHERE
                 user_id = :uid
-                ${valid.where}
+            ${valid.where}
         `
         result = await _db.qry(sql, valid.params)
 
@@ -723,7 +727,7 @@ router.post('/favorite', async (req, res) => {
                 favorite = !favorite
             WHERE
                 user_id = :uid
-                ${valid.where}
+            ${valid.where}
         `
 
         result = await _db.qry(sql, valid.params)
@@ -772,18 +776,32 @@ router.post('/blind', async (req, res) => {
             sql = `
                 INSERT INTO
                     blacklist(
-                        user_id, 
-                        friend_id, 
-                        thumbnail, 
+                        user_id,
+                        friend_id,
+                        thumbnail,
                         status_msg
                     )
                 VALUES
                     (
-                        :uid, 
-                        :fid, 
-                        (SELECT thumbnail FROM users WHERE id = :uid),
-                        (SELECT status_msg FROM users WHERE id = :uid)
-                    )
+                        :uid,
+                        :fid,
+                        (
+                            SELECT
+                                thumbnail
+                            FROM
+                                users
+                            WHERE
+                                id = :uid
+                        ),
+                        (
+                            SELECT
+                                status_msg
+                            FROM
+                                users
+                            WHERE
+                                id = :uid
+                        )
+                )
             `
             await _db.execQry(conn, sql, valid.params)
 
@@ -795,9 +813,7 @@ router.post('/blind', async (req, res) => {
                 AND
                     friend_id = :fid
             `
-
             await _db.execQry(conn, sql, valid.params)
-
         }
 
         await conn.commit()
