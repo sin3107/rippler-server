@@ -90,7 +90,6 @@ router.post('/signup', async (req, res) => {
         {key: 'device_version', value: 'device_version', type: 'str', optional: true, update: true}, // 휴대폰 Version
     ]
 
-
     try {
         _util.valid(body, params, valid)
         // 여기임
@@ -114,8 +113,8 @@ router.post('/signup', async (req, res) => {
                 (
                     :num, :password
                 )
+            ON DUPLICATE KEY UPDATE password = :password, join_yn = 1
         `
-
         result = await _db.execQry(conn, sql, valid.params)
         id = result.insertId
         valid.params['id'] = id
@@ -184,9 +183,7 @@ router.post('/signup', async (req, res) => {
     } catch (e) {
         await conn.rollback()
         conn.release()
-
         _out.err(res, _CONSTANT.ERROR_500, e.toString(), null)
-        return
     }
 
 })
@@ -457,7 +454,9 @@ async function existsOAuth(num) {
         FROM 
             users
         WHERE 
-            num=:num 
+            num = :num
+        AND
+            join_yn = 1
     `
     let sql_params = {num: num}
     let result
