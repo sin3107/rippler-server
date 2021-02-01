@@ -357,8 +357,8 @@ router.post('/add', async (req, res) => {
             if (result.length < 1) {
                 sql = `
                     INSERT INTO
-                        users(num)
-                    VALUE(:num)
+                        users(num, join)
+                    VALUE(:num, 0)
                 `
                 result = await _db.execQry(conn, sql, valid)
 
