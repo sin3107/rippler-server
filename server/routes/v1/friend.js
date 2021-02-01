@@ -380,6 +380,7 @@ router.post('/add', async (req, res) => {
                         )
                 `
                 await _db.execQry(conn, sql, valid)
+
             } else { // blacklist에 추가
 
                 sql = `
@@ -424,6 +425,8 @@ router.get('/setting_state', async (req, res) => {
                 users
             WHERE
                 id = :uid
+            AND
+                join_yn = 1
         `
         result = await _db.qry(sql, sql_params)
 
@@ -464,15 +467,15 @@ router.post('/settings', async (req, res) => {
     try {
 
         sql = `
-        UPDATE
-        users
-        SET
-        ${valid.update}
-        WHERE
-        id =
-    :
-        uid
-            `
+            UPDATE
+                users
+            SET
+                ${valid.update}
+            WHERE
+                id = :uid
+            AND
+                join_yn = 1
+        `
         result = await _db.qry(sql, valid.params)
 
         if (result.changedRows < 1) {

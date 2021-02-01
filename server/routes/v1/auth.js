@@ -356,6 +356,8 @@ router.post('/num_find', async (req, res) => {
                 users
             WHERE
                 num = :num
+            AND
+                join_yn = 1
         `
         result = await _db.qry(sql, valid.params)
 
@@ -402,6 +404,8 @@ router.post('/pass_change', async (req, res) => {
                 ${valid.update}
             WHERE
                 id = :id
+            AND
+                join_yn = 1
         `
         result = await _db.qry(sql, valid.params)
 
